@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Services\Integrations\Tracking;
 use App\Services\Seo\SeoBuilder;
 use App\Services\Seo\StructuredData;
 use App\Services\Storefront\CatalogQuery;
@@ -47,6 +48,10 @@ class CatalogController extends Controller
             'sorts' => CatalogQuery::SORTS,
             'allCategories' => Category::query()->whereNull('parent_id')->with('children')->orderBy('position')->orderBy('name')->get(),
             'action' => $request->url(),
+            'trackEvents' => array_values(array_filter([
+                $search !== null && trim($search) !== '' ? Tracking::search($search) : null,
+                Tracking::viewItemList($result['products']->items(), $title),
+            ])),
             'seo' => $this->seo($request, $title, $category, $search, $result['products']->currentPage()),
         ]);
     }

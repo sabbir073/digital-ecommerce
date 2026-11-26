@@ -12,6 +12,7 @@ use App\Models\SellingPage;
 use App\Models\SellingPageVersion;
 use App\Models\Variant;
 use App\Services\ActivityLogger;
+use App\Services\Integrations\Integrations;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Selling\OfferPricing;
 use App\Services\Selling\PagePresenter;
@@ -117,6 +118,11 @@ class SellingPageController extends Controller
                 'previewUrl' => $page->url().'?preview=1',
                 'hasUnpublishedChanges' => $page->isPublished() && $blocks != Blocks::normalize($page->published_blocks),
             ],
+            'pixels' => collect(Integrations::PAGE_PIXELS)->map(fn (string $field, string $service) => [
+                'service' => $service,
+                'label' => Integrations::SERVICES[$service]['name'].': '.Integrations::SERVICES[$service]['fields'][$field]['label'],
+                'value' => (string) ($page->pixel_ids[$service] ?? ''),
+            ])->values(),
             'offers' => $page->offers->map(fn ($offer) => [
                 'id' => $offer->id,
                 'label' => $offer->label,

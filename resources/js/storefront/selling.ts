@@ -1,4 +1,4 @@
-import { money, t } from './shared';
+import { money, t, track } from './shared';
 import { extraProblems, extras } from './checkout-extras';
 // One-page selling page: Order-now links, the mobile order bar, countdown, click-to-play video
 // and the inline checkout. Card details go from the browser straight to Stripe.
@@ -11,6 +11,7 @@ interface Config {
     startUrl: string;
     couponUrl: string;
     confirmUrl: string | null;
+    track?: { id: string; name: string };
     payLabel: string;
 }
 
@@ -26,8 +27,12 @@ interface Totals {
     errors?: Record<string, string[]>;
 }
 
+interface PaymentElement {
+    mount(target: HTMLElement): void;
+    on(event: 'change', handler: (change: { complete?: boolean }) => void): PaymentElement;
+}
 interface StripeElements {
-    create(type: 'payment', options: Record<string, unknown>): { mount(target: HTMLElement): void };
+    create(type: 'payment', options: Record<string, unknown>): PaymentElement;
     update(options: { amount: number }): void;
     submit(): Promise<{ error?: { message?: string } }>;
 }
@@ -167,8 +172,9 @@ async function checkout(): Promise<void> {
         const check = async () => {
             try {
                 const response = await fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-                const data = (await response.json()) as { state: string; html?: string; message?: string };
+                const data = (await response.json()) as { state: string; html?: string; message?: string; track?: { name: string; data?: Record<string, unknown>; id?: string } | null };
                 if (data.state === 'paid' && data.html) {
+                    if (data.track) track(data.track.name, data.track.data, data.track.id);
                     root.innerHTML = data.html;
                     document.querySelector<HTMLElement>('[data-orderbar]')?.remove();
                     const box = root.querySelector<HTMLElement>('[data-order-confirmation]');
@@ -225,8 +231,16 @@ async function checkout(): Promise<void> {
     let soldOut = false;
     let stripe: StripeInstance | null = null;
     let elements: StripeElements | null = null;
+    let paymentInfoSent = false;
 
     const chosen = () => form.querySelector<HTMLInputElement>('input[name="offer_id"]:checked');
+    // Choosing a pack is this page's "add to cart"; starting to fill in the form is its "begin checkout".
+    const trackPack = (name: string, radio: HTMLInputElement | null) => {
+        if (!radio || !config.track || config.preview) return;
+        const price = Number(radio.dataset.price ?? 0) / 100;
+        track(name, { currency: 'USD', value: price, items: [{ id: config.track.id, name: config.track.name, variant: radio.dataset.label ?? null, price, quantity: 1 }] });
+    };
+    form.addEventListener('focusin', () => trackPack('begin_checkout', chosen()), { once: true });
     const setError = (name: string, message: string) => {
         const target = one(`[data-error="${name}"]`) ?? one('[data-error="checkout"]');
         if (target) target.textContent = message;
@@ -300,6 +314,7 @@ async function checkout(): Promise<void> {
 
     form.querySelectorAll<HTMLInputElement>('input[name="offer_id"]').forEach((radio) => {
         radio.addEventListener('change', () => {
+            trackPack('add_to_cart', radio);
             // Show the new price at once; the server's figures (discount, tax) follow.
             const price = Number(radio.dataset.price ?? 0);
             const node = one('[data-sum-label]');
@@ -389,6 +404,12 @@ async function checkout(): Promise<void> {
                 .create('payment', {
                     layout: 'tabs',
                     fields: { billingDetails: { name: 'never', email: 'never', address: { country: 'never', postalCode: 'never' } } },
+                })
+                .on('change', (change: { complete?: boolean }) => {
+                    if (change.complete && !paymentInfoSent) {
+                        paymentInfoSent = true;
+                        track('add_payment_info');
+                    }
                 })
                 .mount(mount);
         } catch {

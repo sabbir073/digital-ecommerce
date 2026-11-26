@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\Variant;
+use App\Services\Integrations\Tracking;
 use App\Services\Reviews\ReviewListing;
 use App\Services\Seo\SeoBuilder;
 use App\Services\Seo\StructuredData;
@@ -43,6 +44,7 @@ class ProductController extends Controller
         return view('storefront.product', $listing + [
             'form' => ReviewController::formContext($request, $product),
             'product' => $product,
+            'trackEvents' => [Tracking::viewItem($product)],
             'seo' => $this->seo($product, $listing['reviews']->items()),
             'gallery' => $gallery,
             'related' => $related,

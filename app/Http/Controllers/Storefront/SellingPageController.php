@@ -10,6 +10,8 @@ use App\Models\Order;
 use App\Models\SellingPage;
 use App\Services\Checkout\CheckoutService;
 use App\Services\Checkout\CouponService;
+use App\Services\Integrations\PurchaseTracker;
+use App\Services\Integrations\Tracking;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Selling\OfferPricing;
 use App\Services\Selling\PagePresenter;
@@ -69,6 +71,8 @@ class SellingPageController extends Controller
         return response()->view('selling.page', $data + [
             'page' => $page,
             'product' => $page->product,
+            'trackPage' => $page,
+            'trackEvents' => $preview ? [] : [Tracking::viewItem($page->product, $default ? (int) $default['price'] : null)],
             'preview' => $preview,
             'summary' => $summary,
             'coupon' => $summary?->coupon,
@@ -83,6 +87,7 @@ class SellingPageController extends Controller
                 'startUrl' => route('selling-page.start', $page->slug),
                 'couponUrl' => route('selling-page.coupon', $page->slug),
                 'confirmUrl' => $returning ? $this->confirmUrl($page, $returning) : null,
+                'track' => ['id' => (string) $page->product_id, 'name' => $page->product->name],
                 'payLabel' => collect($data['blocks'])->firstWhere('type', 'order')['data']['pay_label'] ?? 'Pay',
             ],
         ])->header('Cache-Control', 'no-store, private');
@@ -188,7 +193,12 @@ class SellingPageController extends Controller
             ->with(['items.downloads.asset', 'payment'])->firstOrFail();
 
         if ($order->wasPaid()) {
-            return response()->json(['state' => 'paid', 'html' => view('selling.confirmation', ['order' => $order])->render()]);
+            return response()->json([
+                'state' => 'paid',
+                'html' => view('selling.confirmation', ['order' => $order])->render(),
+                // Handed over once, so asking again or reloading never repeats the Purchase event.
+                'track' => app(PurchaseTracker::class)->claimForBrowser($order),
+            ]);
         }
         if (in_array($order->status, [Order::FAILED, Order::CANCELLED], true)) {
             return response()->json([

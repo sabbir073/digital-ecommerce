@@ -13,6 +13,11 @@ export const money = (cents: number): string => {
 let reworded: Record<string, string> | null = null;
 
 /** Interface text. The page carries only the strings the owner changed; everything else is the text written here. */
+/** Tell the tracking layer that something happened. It decides which services hear about it. */
+export const track = (name: string, data?: Record<string, unknown>, id?: string): void => {
+    document.dispatchEvent(new CustomEvent('store:track', { detail: { name, data, id } }));
+};
+
 export const t = (text: string, replace: Record<string, string | number> = {}): string => {
     if (reworded === null) {
         try {

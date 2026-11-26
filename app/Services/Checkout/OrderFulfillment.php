@@ -7,6 +7,7 @@ use App\Models\Coupon;
 use App\Models\DigitalAsset;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\Integrations\PurchaseTracker;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Reviews\ReviewRequests;
 use App\Support\Money;
@@ -104,6 +105,8 @@ class OrderFulfillment
         }
 
         $this->reviewRequests->schedule($order);
+        // Payment is confirmed: this is the one moment the Purchase event goes to the server-side services.
+        app(PurchaseTracker::class)->sendFromServer($order);
 
         try {
             Mail::to($order->email)->queue(new OrderConfirmation($order));

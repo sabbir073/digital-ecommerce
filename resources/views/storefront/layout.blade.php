@@ -56,6 +56,7 @@
         <script type="application/json" id="ui-text">{!! json_encode($uiText, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!}</script>
     @endif
     @stack('end')
+    @include('storefront.partials.tracking')
     @unless ($builder ?? false)
         @if ($seoSite['body_end'] !== '')
             {!! $seoSite['body_end'] !!}

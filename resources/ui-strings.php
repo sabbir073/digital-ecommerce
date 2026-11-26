@@ -220,6 +220,7 @@ return [
         'Preview of the draft. Visitors do not see this version until you publish.',
         'Social links',
         'All rights reserved.',
+        'Cookie settings',
         'Main',
         'Account',
         'Menu',

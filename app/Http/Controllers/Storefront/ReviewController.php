@@ -11,6 +11,7 @@ use App\Models\ReviewReport;
 use App\Models\ReviewRequest;
 use App\Models\ReviewVote;
 use App\Models\Setting;
+use App\Services\Integrations\Tracking;
 use App\Services\Reviews\Captcha;
 use App\Services\Reviews\ReviewListing;
 use App\Services\Reviews\ReviewService;
@@ -201,6 +202,10 @@ class ReviewController extends Controller
             $review = $this->reviews->submit($product, $data, $spam ? [] : $request->file('photos', []), $user, $request->ip(), $item, $order, $invitation, $spam);
         } catch (UniqueConstraintViolationException) {
             return $back()->with('error', t('You have already reviewed this item. Thank you.'));
+        }
+
+        if (! $spam) {
+            Tracking::flash(Tracking::event('submit_review', ['rating' => (int) $review->rating] + ($product ? ['items' => [Tracking::item($product, null, 1, $product->fromPriceCents())]] : [])));
         }
 
         $message = $review->status === Review::APPROVED

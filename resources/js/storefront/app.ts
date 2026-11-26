@@ -1,3 +1,4 @@
+import { track } from './shared';
 // Storefront behaviour shared by every public page. Kept tiny on purpose:
 // selling pages have a 150 KB JavaScript budget (PRD section 9).
 
@@ -145,7 +146,9 @@ function cart(): void {
                 window.location.assign(form.dataset.fallback ?? '/cart');
                 return;
             }
-            apply(await response.json());
+            const result = (await response.json()) as Parameters<typeof apply>[0] & { track?: { name: string; data?: Record<string, unknown>; id?: string } | null };
+            apply(result);
+            if (result.track) track(result.track.name, result.track.data, result.track.id);
             if (opens) void open(submitter);
         } catch {
             form.submit();

@@ -3,9 +3,9 @@
 A CMS-driven store for digital products, with a normal catalog checkout and one-page selling pages.
 Built with Laravel 13, React, Tailwind CSS, Material UI (admin) and MySQL.
 
-The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains Phases 1 to 9.
+The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains Phases 1 to 10.
 
-## What works today (Phases 1 to 9)
+## What works today (Phases 1 to 10)
 
 - Design tokens from PRD section 8, shared by the storefront (Tailwind) and the admin panel (Material UI theme).
 - Shared storefront header and footer, with the announcement bar and category navigation read from the database.
@@ -44,6 +44,10 @@ The product requirements and the approved build plan live in the project documen
 - SEO on the storefront: every page has a title, description, canonical address, Open Graph and X card tags, built from the page's own SEO fields or the site-wide templates. Cart, checkout and account pages are kept out of search results. Filtered and sorted lists are noindex with a canonical to the clean address, and page 2 and later keep their own canonical. Structured data is generated for products (with ratings once there is an approved review), breadcrumbs, the home page, FAQ blocks and blog posts.
 - `/sitemap.xml` (split by products, categories, selling pages, pages and posts; published and indexable items only) and `/robots.txt` are built on request, so they are always current.
 - Admin > SEO: a dashboard of every item with a failing check; an SEO panel for the home page and each product, category, selling page, page and post (meta title and description with counters and a search preview, address with an automatic 301 when a published address changes, canonical, index and follow, social sharing with a preview, focus keyword, checklist, custom meta tags); SEO settings (templates with variables, default share image, verification tags, custom code for head and body for Super Admins, robots.txt editor with reset, sitemap content types); and Redirects and 404s (create, edit, delete, CSV import, loop detection, and a log of missing addresses with one-click redirect).
+- Integrations (Admin > Integrations): one card per service (Google Tag Manager, Google Analytics 4, Google Ads, Meta Pixel, Meta Conversions API, TikTok, Pinterest, Snapchat, Microsoft Ads) with Off, On or Error, the reason, the last event time and a test button. The storefront sends one set of store events and each service's adapter translates them. Purchase is sent once per order, only after the payment webhook confirms it, from the server and once from the buyer's browser with the same event ID. Secrets are stored encrypted and shown masked.
+- Cookie banner with editable text and categories, for every visitor or only Europe. No statistics or marketing tag loads before the visitor allows it, the choice is passed to Google consent mode and Meta, and every choice is recorded. Visitors can reopen it from "Cookie settings" in the footer.
+- Event log of the newest 500 events with what was sent and what the service answered; product feeds for Google Merchant Center (`/feeds/google.xml`) and Meta (`/feeds/meta.csv`); the SMTP account for store email with a test button; custom scripts site-wide or per address (Super Admin only); extra tracking IDs per selling page.
+- `docs/integrations.md` lists what was read from each service's official documentation and what still has to be confirmed with that service's own debug tool on a real account.
 
 ## Local setup
 
