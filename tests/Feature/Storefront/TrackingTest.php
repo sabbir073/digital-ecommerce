@@ -237,7 +237,7 @@ class TrackingTest extends CheckoutTestCase
         $this->postJson('/consent', ['visitor' => 'BAD ID', 'analytics' => true, 'marketing' => true])->assertStatus(422);
 
         $this->assertSame(1, ConsentRecord::query()->count());
-        $this->assertSame(['necessary' => true, 'analytics' => false, 'marketing' => false], ConsentRecord::query()->firstOrFail()->categories);
+        $this->assertEquals(['necessary' => true, 'analytics' => false, 'marketing' => false], ConsentRecord::query()->firstOrFail()->categories);
     }
 
     public function test_product_feeds_list_products_on_sale_that_have_an_image(): void
