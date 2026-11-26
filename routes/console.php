@@ -8,3 +8,6 @@ Schedule::command('queue:work --stop-when-empty --max-time=50')->everyMinute()->
 
 // Unpaid orders are given up on once their stock hold has run out.
 Schedule::command('orders:expire-pending')->everyFiveMinutes()->withoutOverlapping();
+
+// Review-request emails go out a set number of days after an order is paid (Admin > Reviews > Settings).
+Schedule::command('reviews:send-requests')->hourly()->withoutOverlapping();

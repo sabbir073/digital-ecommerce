@@ -70,6 +70,7 @@ class Blocks
             ]],
             'reviews' => ['label' => 'Reviews', 'fields' => [
                 ['key' => 'heading', 'label' => 'Heading', 'type' => 'text', 'max' => 120, 'default' => 'What customers say'],
+                ['key' => 'source', 'label' => 'Reviews of', 'type' => 'select', 'options' => ['product' => 'The linked product', 'store' => 'The store'], 'default' => 'product'],
                 ['key' => 'mode', 'label' => 'Which reviews', 'type' => 'select', 'options' => ['newest' => 'Newest first', 'picked' => 'Hand-picked'], 'default' => 'newest'],
                 ['key' => 'review_ids', 'label' => 'Hand-picked reviews', 'type' => 'reviews', 'max' => 12],
                 ['key' => 'limit', 'label' => 'How many to show', 'type' => 'select', 'options' => ['3' => '3', '6' => '6', '9' => '9'], 'default' => '3'],

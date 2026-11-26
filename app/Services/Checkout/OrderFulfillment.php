@@ -8,6 +8,7 @@ use App\Models\DigitalAsset;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Payments\PaymentGateway;
+use App\Services\Reviews\ReviewRequests;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,6 +22,7 @@ class OrderFulfillment
     public function __construct(
         private readonly StockService $stock,
         private readonly PaymentGateway $gateway,
+        private readonly ReviewRequests $reviewRequests,
     ) {}
 
     /**
@@ -100,6 +102,8 @@ class OrderFulfillment
                 $order->record('tax_not_recorded', 'Stripe Tax transaction could not be recorded: '.$e->getMessage());
             }
         }
+
+        $this->reviewRequests->schedule($order);
 
         try {
             Mail::to($order->email)->queue(new OrderConfirmation($order));

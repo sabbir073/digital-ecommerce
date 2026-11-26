@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\DigitalAsset;
 use App\Models\Media;
 use App\Models\Product;
+use App\Models\Review;
 use App\Models\SellingPage;
 use App\Models\Setting;
 use App\Services\MediaService;
@@ -94,6 +95,7 @@ class SeedDemoCatalog extends Command
         }
 
         $this->sellingPage();
+        $this->reviews();
 
         if (Setting::get('announcement') === null) {
             Setting::put('announcement', ['enabled' => true, 'text' => 'Demo store: these are sample products and cannot be bought.', 'demo' => true]);
@@ -103,6 +105,30 @@ class SeedDemoCatalog extends Command
         $this->info('Demo catalog added.'.($missing ? " {$missing} stock photos could not be downloaded; add images in Admin > Media library." : ''));
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Sample reviews so the review screens can be tried. Each one is labelled "Demo review"
+     * on the storefront and is removed by demo:clear. They are never created on production.
+     */
+    private function reviews(): void
+    {
+        $samples = [
+            [5, 'Sample five-star review', 'This is sample text that shows how a five-star review looks on the page. It is not from a real customer.', 'Demo Reviewer A', 'BD'],
+            [4, 'Sample four-star review', 'This is sample text that shows how a four-star review looks on the page. It is not from a real customer.', 'Demo Reviewer B', 'US'],
+            [5, null, 'This is sample text that shows a review without a title. It is not from a real customer.', 'Demo Reviewer C', 'DE'],
+        ];
+        $targets = Product::query()->where('sku', 'like', 'DEMO-%')->orderBy('id')->limit(4)->pluck('id')->push(null);
+
+        foreach ($targets as $productId) {
+            foreach ($samples as $index => [$rating, $title, $body, $name, $country]) {
+                Review::create([
+                    'product_id' => $productId, 'rating' => $rating, 'title' => $title, 'body' => $body, 'display_name' => $name, 'country_code' => $country,
+                    'status' => Review::APPROVED, 'source' => 'demo', 'source_label' => 'Demo review', 'reviewed_at' => now()->subDays($index * 3 + 1),
+                ]);
+            }
+        }
+        $this->line('  added labelled demo reviews');
     }
 
     /** One published sample selling page, so the one-page checkout can be tried straight away. */

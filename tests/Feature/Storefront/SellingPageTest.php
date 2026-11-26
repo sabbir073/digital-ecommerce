@@ -244,7 +244,7 @@ class SellingPageTest extends CheckoutTestCase
         Review::create(['product_id' => $page->product_id, 'display_name' => 'Pending Pat', 'rating' => 1, 'body' => 'Not checked yet.', 'status' => 'pending']);
         Review::create(['product_id' => $other->id, 'display_name' => 'Elsewhere', 'rating' => 5, 'body' => 'About another product.', 'status' => 'approved']);
 
-        $this->get('/p/preset-launch')->assertOk()->assertSee('Loved by editors')->assertSee('Saved me hours.')->assertSee('Maya')->assertSee('🇩🇪')
+        $this->get('/p/preset-launch')->assertOk()->assertSee('Loved by editors')->assertSee('Saved me hours.')->assertSee('Maya')->assertSee('flags/de.svg', false)->assertSee('alt="Germany"', false)
             ->assertDontSee('Not checked yet.')->assertDontSee('About another product.');
     }
 

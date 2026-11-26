@@ -7,6 +7,7 @@ use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\OrderController;
 use App\Http\Controllers\Storefront\ProductController;
+use App\Http\Controllers\Storefront\ReviewController;
 use App\Http\Controllers\Storefront\SellingPageController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,15 @@ Route::get('/products', [CatalogController::class, 'index'])->name('products');
 Route::get('/c/{slug}', [CatalogController::class, 'category'])->name('category');
 Route::get('/search', [CatalogController::class, 'search'])->name('search');
 Route::get('/product/{slug}', ProductController::class)->name('product');
+
+// Reviews: of a product, of the store, and through the link in the review-request email
+Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
+Route::post('/reviews', [ReviewController::class, 'storeForStore'])->middleware('throttle:review')->name('reviews.store');
+Route::post('/product/{slug}/reviews', [ReviewController::class, 'storeForProduct'])->middleware('throttle:review')->name('product.reviews.store');
+Route::get('/review/{token}', [ReviewController::class, 'invited'])->name('review.invited');
+Route::post('/review/{token}', [ReviewController::class, 'storeInvited'])->middleware('throttle:review')->name('review.invited.store');
+Route::post('/reviews/{review}/helpful', [ReviewController::class, 'helpful'])->middleware('throttle:review-vote')->name('reviews.helpful');
+Route::post('/reviews/{review}/report', [ReviewController::class, 'report'])->middleware('throttle:review-vote')->name('reviews.report');
 
 // Cart
 Route::get('/cart', [CartController::class, 'show'])->name('cart');

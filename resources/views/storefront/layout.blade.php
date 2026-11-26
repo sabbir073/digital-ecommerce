@@ -40,5 +40,6 @@
             <div class="drawer-body" data-cart-root aria-live="polite"></div>
         </aside>
     </div>
+    @stack('end')
 </body>
 </html>

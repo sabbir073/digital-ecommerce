@@ -69,6 +69,8 @@
                     <a href="#reviews" class="mt-3 inline-flex min-h-11 items-center hover:underline">
                         @include('storefront.partials.rating', ['average' => $product->rating_average, 'count' => $product->rating_count])
                     </a>
+                @else
+                    <a href="#write-review" class="mt-3 inline-flex min-h-11 items-center text-label text-muted hover:text-ink hover:underline">Write the first review</a>
                 @endif
 
                 <p class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -178,6 +180,8 @@
                 </div>
             </div>
         </div>
+
+        @include('storefront.partials.reviews', ['heading' => 'Customer reviews'])
 
         @if ($related->isNotEmpty())
             <section class="section-gap" aria-labelledby="related-heading">
