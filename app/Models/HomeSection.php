@@ -12,7 +12,10 @@ use Illuminate\Support\Collection;
  */
 class HomeSection extends Model
 {
-    public const TYPES = ['hero', 'categories', 'best_sellers', 'featured_offer', 'trust'];
+    public const TYPES = ['hero', 'categories', 'best_sellers', 'featured_offer', 'store_reviews', 'trust'];
+
+    /** Sections that stay off until an admin switches them on. */
+    public const OFF_BY_DEFAULT = ['store_reviews'];
 
     protected $fillable = ['type', 'enabled', 'position', 'settings'];
 
@@ -38,6 +41,7 @@ class HomeSection extends Model
             'categories' => ['heading' => 'Shop by category'],
             'best_sellers' => ['heading' => 'Best sellers', 'product_ids' => []],
             'featured_offer' => ['selling_page_id' => null, 'eyebrow' => null, 'headline' => null, 'text' => null, 'button_label' => null],
+            'store_reviews' => ['heading' => 'What customers say'],
             'trust' => [
                 'items' => [
                     ['icon' => 'download', 'title' => 'Instant delivery', 'text' => 'Your download link arrives right after payment.'],
@@ -65,7 +69,7 @@ class HomeSection extends Model
 
                 return [
                     'type' => $type,
-                    'enabled' => $row ? $row->enabled : true,
+                    'enabled' => $row ? $row->enabled : ! in_array($type, self::OFF_BY_DEFAULT, true),
                     'position' => $row ? $row->position : $index,
                     'settings' => array_merge($defaults[$type], $row?->settings ?? []),
                 ];

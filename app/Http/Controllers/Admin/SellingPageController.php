@@ -149,8 +149,8 @@ class SellingPageController extends Controller
             'blocks' => $blocks,
             'library' => Blocks::library(),
             'media' => $this->media($blocks),
-            'reviews' => Review::query()->approved()->where('product_id', $page->product_id)->latest('id')->limit(200)->get()
-                ->map(fn (Review $r) => ['id' => $r->id, 'label' => $r->display_name.' · '.$r->rating.'/5 · '.Str::limit($r->body, 60)]),
+            'reviews' => Review::query()->approved()->where(fn ($q) => $q->where('product_id', $page->product_id)->orWhereNull('product_id'))->latest('id')->limit(300)->get()
+                ->map(fn (Review $r) => ['id' => $r->id, 'label' => ($r->isStoreReview() ? 'Store review · ' : '').$r->display_name.' · '.$r->rating.'/5 · '.Str::limit($r->body, 60)]),
             'problems' => $this->problems($page, $blocks),
             'versions' => $this->versions($page),
         ]);

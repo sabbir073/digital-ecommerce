@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductCsvController;
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SecuritySettingsController;
 use App\Http\Controllers\Admin\SellingPageController;
@@ -111,6 +112,17 @@ Route::middleware('admin.auth')->group(function () {
     Route::get('orders/{order}', [OrderController::class, 'show'])->middleware('permission:orders,view')->name('orders.show');
 
     // Coupons
+    Route::get('reviews', [ReviewController::class, 'index'])->middleware('permission:reviews,view')->name('reviews.index');
+    Route::get('reviews/import-format', [ReviewController::class, 'sample'])->middleware('permission:reviews,view')->name('reviews.sample');
+    Route::get('reviews/settings', [ReviewController::class, 'settings'])->middleware('permission:reviews,view')->name('reviews.settings');
+    Route::put('reviews/settings', [ReviewController::class, 'saveSettings'])->middleware('permission:reviews,edit')->name('reviews.settings.update');
+    Route::post('reviews', [ReviewController::class, 'store'])->middleware('permission:reviews,create')->name('reviews.store');
+    Route::post('reviews/import', [ReviewController::class, 'import'])->middleware('permission:reviews,create')->name('reviews.import');
+    Route::post('reviews/bulk', [ReviewController::class, 'bulk'])->middleware('permission:reviews,edit')->name('reviews.bulk');
+    Route::put('reviews/{review}', [ReviewController::class, 'update'])->middleware('permission:reviews,edit')->name('reviews.update');
+    Route::delete('reviews/{review}/photos/{media}', [ReviewController::class, 'removePhoto'])->middleware('permission:reviews,edit')->name('reviews.photos.destroy');
+    Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->middleware('permission:reviews,delete')->name('reviews.destroy');
+
     Route::get('coupons', [CouponController::class, 'index'])->middleware('permission:coupons,view')->name('coupons.index');
     Route::post('coupons', [CouponController::class, 'store'])->middleware('permission:coupons,create')->name('coupons.store');
     Route::put('coupons/{coupon}', [CouponController::class, 'update'])->middleware('permission:coupons,edit')->name('coupons.update');

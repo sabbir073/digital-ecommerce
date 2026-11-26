@@ -53,10 +53,13 @@ class PagePresenter
             if ($block['type'] !== 'reviews') {
                 continue;
             }
-            $query = Review::query()->approved()->where('product_id', $page->product_id);
+            // Approved reviews only, of the page's product or of the store as a whole.
+            $scope = fn ($q) => ($block['data']['source'] ?? 'product') === 'store' ? $q->whereNull('product_id') : $q->where('product_id', $page->product_id);
+            $query = Review::query()->approved()->with('photos');
             $reviews[$block['id']] = $block['data']['mode'] === 'picked'
-                ? $query->whereIn('id', $block['data']['review_ids'])->get()->sortBy(fn (Review $r) => array_search($r->id, $block['data']['review_ids'], true))->values()
-                : $query->latest('id')->limit((int) $block['data']['limit'])->get();
+                ? $query->where(fn ($q) => $q->where('product_id', $page->product_id)->orWhereNull('product_id'))->whereIn('id', $block['data']['review_ids'])->get()
+                    ->sortBy(fn (Review $r) => array_search($r->id, $block['data']['review_ids'], true))->values()
+                : $scope($query)->orderByDesc('pinned')->orderByRaw('COALESCE(reviewed_at, created_at) DESC')->orderByDesc('id')->limit((int) $block['data']['limit'])->get();
         }
 
         return [

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Review;
 use App\Models\SellingPage;
 use App\Models\Setting;
 use App\Models\Tag;
@@ -24,6 +25,9 @@ class ClearDemoCatalog extends Command
 
         // Demo selling pages go first: a page holds on to the product it sells.
         SellingPage::withTrashed()->whereIn('product_id', $products->pluck('id'))->forceDelete();
+
+        // Demo reviews of the store (those of demo products go with the product).
+        Review::query()->where('source', 'demo')->get()->each->delete();
 
         foreach ($products as $product) {
             $images = $product->images->concat($product->variants->pluck('image')->filter())->unique('id');

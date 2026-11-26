@@ -5,7 +5,7 @@ Built with Laravel 13, React, Tailwind CSS, Material UI (admin) and MySQL.
 
 The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains **Phase 1: Foundation**.
 
-## What works today (Phases 1 to 5)
+## What works today (Phases 1 to 6)
 
 - Design tokens from PRD section 8, shared by the storefront (Tailwind) and the admin panel (Material UI theme).
 - Shared storefront header and footer, with the announcement bar and category navigation read from the database.
@@ -27,6 +27,11 @@ The product requirements and the approved build plan live in the project documen
 - Packs: one to four per page. A pack is a bundle of products and variants at one fixed price and shows "Sold out" when any item in it is out of stock.
 - Admin > Selling pages: create from the starter template or blank, edit packs and block content, preview the draft, publish (blocked until there is exactly one order block and no `[PLACEHOLDER]` text), unpublish, delete. Views, orders and conversion rate per page.
 - Page builder (Admin > Selling pages > Open builder): block library on the left, a live canvas drawn with the real storefront templates in the middle, block settings on the right. Drag blocks in from the library, drag them by the handle to reorder, or use the Move, Duplicate, Hide and Delete buttons. Click text to edit it in place and click an image to replace it. Desktop, tablet and mobile widths, undo and redo (100 steps), autosave one second after the last edit, publish, restore any of the last ten published versions, and duplicate a page. The builder's code is a separate bundle that public pages never load.
+- Reviews: product reviews on every product page and store reviews at `/reviews`, with a rating summary, star bars that filter, sort, filters by photos and country, and 10 per page. Country flags are bundled SVG images in `public/flags` (from the MIT-licensed flag-icons set), not emoji.
+- Writing a review: rating, title, text (20 characters or more), up to 5 photos, name, country and email. A review linked to a paid order shows "Verified buyer" and takes its country from the order. Visitors can mark a review helpful once and report it.
+- Review request email: sent a set number of days after payment by `reviews:send-requests` (scheduled hourly), with a link per item that needs no sign-in.
+- Admin > Reviews: queue with status tabs, search and filters, bulk approve, reject and delete, public reply, pin, country correction, photo removal and reports. Genuine reviews collected elsewhere can be added by hand or imported by CSV and always show a source label. There is no feature that writes review text.
+- Admin > Reviews > Settings: who may review, auto-approval of verified buyers, holding reviews with links or blocked words, the request email and its delay, flags on or off, the home page section, and an optional Cloudflare Turnstile captcha.
 
 ## Local setup
 

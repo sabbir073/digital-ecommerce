@@ -7,11 +7,13 @@ use App\Models\Media;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Variant;
+use App\Services\Reviews\ReviewListing;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function __invoke(string $slug): View
+    public function __invoke(Request $request, ReviewListing $reviews, string $slug): View
     {
         $product = Product::query()->visible()->where('slug', $slug)
             ->with(['category.parent', 'images', 'options.values', 'variants.optionValues', 'variants.image', 'seo'])
@@ -33,7 +35,8 @@ class ProductController extends Controller
             ->orderByDesc('sales_count')->orderByDesc('id')
             ->limit(4)->get();
 
-        return view('storefront.product', [
+        return view('storefront.product', $reviews->build($product->id, $request) + [
+            'form' => ReviewController::formContext($request, $product),
             'product' => $product,
             'gallery' => $gallery,
             'related' => $related,

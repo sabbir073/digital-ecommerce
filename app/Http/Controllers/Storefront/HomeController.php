@@ -7,8 +7,11 @@ use App\Models\Category;
 use App\Models\HomeSection;
 use App\Models\Media;
 use App\Models\Product;
+use App\Models\Review;
 use App\Models\SellingPage;
 use App\Models\Setting;
+use App\Services\Reviews\RatingCalculator;
+use App\Services\Reviews\ReviewSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 
@@ -24,6 +27,10 @@ class HomeController extends Controller
                 'featured_offer' => ['page' => ($section['settings']['selling_page_id'] ?? null)
                     ? SellingPage::query()->published()->with('product.images')->find($section['settings']['selling_page_id'])
                     : null],
+                'store_reviews' => ['reviews' => Review::query()->approved()->ofStore()->with('photos')
+                    ->where('rating', '>=', (int) app(ReviewSettings::class)->get('home_min_rating'))
+                    ->orderByDesc('pinned')->orderByRaw('COALESCE(reviewed_at, created_at) DESC')->limit(3)->get(),
+                    'summary' => app(RatingCalculator::class)->summary(null)],
                 default => [],
             };
 

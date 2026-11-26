@@ -1203,3 +1203,97 @@
 @media (prefers-reduced-motion: reduce) {
     .sp-orderbar, .sp-video-play, .sp-faq-icon { transition: none; }
 }
+
+/* Reviews (PRD section 12) */
+@layer components {
+    .flag {
+        display: inline-block;
+        width: 20px;
+        height: 15px;
+        border-radius: 2px;
+        box-shadow: 0 0 0 1px rgb(17 19 23 / 0.08);
+        object-fit: cover;
+    }
+
+    .review-summary {
+        display: grid;
+        gap: 28px;
+        padding: 24px;
+        border-radius: 20px;
+        background: var(--color-soft);
+    }
+
+    @media (min-width: 768px) {
+        .review-summary { grid-template-columns: 220px minmax(0, 420px); align-items: center; gap: 48px; padding: 32px; }
+    }
+
+    .review-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 36px;
+        padding-inline: 8px;
+        margin-inline: -8px;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: background-color 150ms ease;
+    }
+    .review-bar:hover { background: rgb(17 19 23 / 0.05); }
+    .review-bar-active { background: var(--color-accent-tint); color: var(--color-accent-tint-text); font-weight: 600; }
+    .review-bar-track { flex: 1; height: 8px; border-radius: 999px; background: var(--color-line); overflow: hidden; }
+    .review-bar-fill { display: block; height: 100%; border-radius: 999px; background: var(--color-ink); }
+
+    .review-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; }
+    .review-filters .field { min-width: 180px; }
+
+    .review { padding-block: 28px; border-bottom: 1px solid var(--color-line); scroll-margin-top: 96px; }
+    .review-verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f6b3c;
+    }
+    .review-photo { display: block; overflow: hidden; border-radius: 12px; }
+    .review-photo img { width: 88px; height: 88px; object-fit: cover; transition: transform 200ms ease; }
+    .review-photo:hover img { transform: scale(1.05); }
+    .review-reply { margin-top: 16px; padding: 14px 16px; border-left: 3px solid var(--color-accent); border-radius: 0 12px 12px 0; background: var(--color-soft); }
+    .review-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 44px;
+        color: var(--color-muted);
+        font-weight: 500;
+        cursor: pointer;
+        list-style: none;
+    }
+    .review-action::-webkit-details-marker { display: none; }
+    .review-action:hover { color: var(--color-ink); text-decoration: underline; }
+
+    .review-form-wrap { margin-top: 48px; max-width: 720px; scroll-margin-top: 96px; }
+    .review-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .review-file { padding-block: 10px; height: auto; }
+
+    /* Five radio buttons shown as stars. Listed 5 to 1 and reversed, so hovering fills the stars before it. */
+    .star-input { display: inline-flex; flex-direction: row-reverse; gap: 2px; }
+    .star-input label {
+        width: 44px;
+        height: 44px;
+        cursor: pointer;
+        background: var(--color-field);
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z'/%3E%3C/svg%3E") center / 34px 34px no-repeat;
+        transition: background-color 120ms ease, transform 120ms ease;
+    }
+    .star-input input:checked ~ label,
+    .star-input label:hover,
+    .star-input label:hover ~ label { background: #e0a100; }
+    .star-input label:active { transform: scale(0.9); }
+    .star-input:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 4px; border-radius: 8px; }
+}
+
+@layer components {
+    /* Stars inside a selling page block follow the block's text colour, so they stay visible on dark backgrounds. */
+    .sp-stars { background: linear-gradient(90deg, currentColor calc(var(--rating) / 5 * 100%), var(--sp-line, var(--color-field)) 0); }
+}
