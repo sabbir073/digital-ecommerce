@@ -6,6 +6,7 @@ export interface SharedProps {
         user: { id: number; name: string; email: string; role: string | null; isSuper: boolean; hasTwoFactor: boolean } | null;
         permissions: PermissionMap;
     };
+    payments: { testMode: boolean } | null;
     flash: { success: string | null; error: string | null };
     [key: string]: unknown;
 }

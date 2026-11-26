@@ -4,9 +4,12 @@ use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductCsvController;
 use App\Http\Controllers\Admin\RoleController;
@@ -86,4 +89,19 @@ Route::middleware('admin.auth')->group(function () {
 
     // Activity log (read only)
     Route::get('activity', [ActivityLogController::class, 'index'])->middleware('permission:activity,view')->name('activity.index');
+
+    // Orders
+    Route::get('orders', [OrderController::class, 'index'])->middleware('permission:orders,view')->name('orders.index');
+    Route::get('orders/{order}', [OrderController::class, 'show'])->middleware('permission:orders,view')->name('orders.show');
+
+    // Coupons
+    Route::get('coupons', [CouponController::class, 'index'])->middleware('permission:coupons,view')->name('coupons.index');
+    Route::post('coupons', [CouponController::class, 'store'])->middleware('permission:coupons,create')->name('coupons.store');
+    Route::put('coupons/{coupon}', [CouponController::class, 'update'])->middleware('permission:coupons,edit')->name('coupons.update');
+    Route::delete('coupons/{coupon}', [CouponController::class, 'destroy'])->middleware('permission:coupons,delete')->name('coupons.destroy');
+
+    // Payment settings (Stripe keys are Super Admin only, enforced in the controller)
+    Route::get('settings/payments', [PaymentSettingsController::class, 'edit'])->middleware('permission:settings,view')->name('settings.payments');
+    Route::put('settings/payments/keys', [PaymentSettingsController::class, 'updateKeys'])->middleware('permission:settings,edit')->name('settings.payments.keys');
+    Route::put('settings/payments/options', [PaymentSettingsController::class, 'updateOptions'])->middleware('permission:settings,edit')->name('settings.payments.options');
 });
