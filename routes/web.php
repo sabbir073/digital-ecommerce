@@ -6,6 +6,7 @@ use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CatalogController;
 use App\Http\Controllers\Storefront\ChatController;
 use App\Http\Controllers\Storefront\CheckoutController;
+use App\Http\Controllers\Storefront\FeedController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\OrderController;
 use App\Http\Controllers\Storefront\PageController;
@@ -13,12 +14,17 @@ use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ReviewController;
 use App\Http\Controllers\Storefront\SellingPageController;
 use App\Http\Controllers\Storefront\SeoFilesController;
+use App\Http\Controllers\Storefront\TrackingController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 
 // Files for search engines, built from the SEO settings
+Route::get('/feeds/google.xml', [FeedController::class, 'google'])->name('feeds.google');
+Route::get('/feeds/meta.csv', [FeedController::class, 'meta'])->name('feeds.meta');
+Route::post('/events', [TrackingController::class, 'event'])->middleware('throttle:events')->name('events.store');
+Route::post('/consent', [TrackingController::class, 'consent'])->middleware('throttle:consent')->name('consent.store');
 Route::get('/robots.txt', [SeoFilesController::class, 'robots'])->name('robots');
 Route::get('/sitemap.xml', [SeoFilesController::class, 'index'])->name('sitemap');
 Route::get('/sitemap-{name}.xml', [SeoFilesController::class, 'show'])->where('name', '[a-z-]+')->name('sitemap.show');

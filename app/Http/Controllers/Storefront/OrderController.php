@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Storefront;
 use App\Http\Controllers\Controller;
 use App\Models\DownloadGrant;
 use App\Models\Order;
+use App\Services\Integrations\PurchaseTracker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,6 +23,8 @@ class OrderController extends Controller
 
         return view('storefront.order', [
             'order' => $order,
+            // Handed over once: the first time the paid order is shown. A refresh gets nothing.
+            'trackEvents' => array_values(array_filter([app(PurchaseTracker::class)->claimForBrowser($order)])),
             'statusUrl' => URL::signedRoute('order.status', ['number' => $order->number]),
         ]);
     }

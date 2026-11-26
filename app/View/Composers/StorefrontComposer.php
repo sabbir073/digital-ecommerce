@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Services\Chat\ChatSettings;
 use App\Services\Checkout\CartService;
 use App\Services\Content\Navigation;
+use App\Services\Integrations\CustomScripts;
 use App\Services\Seo\SeoBuilder;
 use App\Services\StoreSettings;
 use App\Services\UiText;
@@ -56,6 +57,23 @@ class StorefrontComposer
         $view->with($this->shared);
     }
 
+    /**
+     * Site-wide verification tags and code from SEO settings, plus the custom scripts for this address.
+     *
+     * @return array{verification:string, head:string, body_start:string, body_end:string}
+     */
+    private function siteCode(): array
+    {
+        $site = app(SeoBuilder::class)->site();
+        foreach (app(CustomScripts::class)->for(request()) as $placement => $code) {
+            if ($code !== '') {
+                $site[$placement] = trim($site[$placement]."\n".$code);
+            }
+        }
+
+        return $site;
+    }
+
     /** @return array<string, mixed> */
     private function shared(): array
     {
@@ -69,7 +87,7 @@ class StorefrontComposer
                 ->filter(fn (array $menu) => $menu['items'] !== [])->values(),
             'cartCount' => $this->cartCount(),
             'theme' => $this->settings->storefrontTheme(),
-            'seoSite' => app(SeoBuilder::class)->site(),
+            'seoSite' => $this->siteCode(),
             'currencyFormat' => StoreSettings::currencyFormat(),
             'uiText' => UiText::forScripts(),
             'storeContact' => array_filter([

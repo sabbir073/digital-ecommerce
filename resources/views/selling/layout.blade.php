@@ -39,7 +39,7 @@
 
     <footer class="container-selling flex flex-wrap justify-between gap-3 py-7 text-[14px] text-muted">
         <span>&copy; {{ date('Y') }} {{ $storeName }}</span>
-        <span>{{ t('Secure card payment by Stripe') }}</span>
+        <span>{{ t('Secure card payment by Stripe') }} <button type="button" hidden data-consent-open class="ml-2 underline">{{ t('Cookie settings') }}</button></span>
     </footer>
 
     @if (! ($builder ?? false) && ($chat['onSellingPages'] ?? false))
@@ -51,6 +51,7 @@
         <script type="application/json" id="ui-text">{!! json_encode($uiText, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!}</script>
     @endif
     @stack('end')
+    @include('storefront.partials.tracking')
     @unless ($builder ?? false)
         @if ($seoSite['body_end'] !== '')
             {!! $seoSite['body_end'] !!}

@@ -1,4 +1,4 @@
-import { money, t } from './shared';
+import { money, t, track } from './shared';
 import { extraProblems, extras } from './checkout-extras';
 // Checkout: Stripe's embedded Payment Element (cards, Apple Pay, Google Pay, 3D Secure).
 // Card details go from the browser straight to Stripe. The amount is always set by the server.
@@ -13,8 +13,12 @@ interface Config {
 }
 
 /* Minimal shapes of the parts of Stripe.js used here. */
+interface PaymentElement {
+    mount(target: HTMLElement): void;
+    on(event: 'change', handler: (change: { complete?: boolean }) => void): PaymentElement;
+}
 interface StripeElements {
-    create(type: 'payment', options: Record<string, unknown>): { mount(target: HTMLElement): void };
+    create(type: 'payment', options: Record<string, unknown>): PaymentElement;
     update(options: { amount: number }): void;
     submit(): Promise<{ error?: { message?: string } }>;
 }
@@ -75,6 +79,7 @@ async function init(): Promise<void> {
     let busy = false;
     let stripe: StripeInstance | null = null;
     let elements: StripeElements | null = null;
+    let paymentInfoSent = false;
 
     const setError = (name: string, message: string) => {
         const target = form.querySelector<HTMLElement>(`[data-error="${name}"]`) ?? form.querySelector<HTMLElement>('[data-error="checkout"]');
@@ -169,6 +174,12 @@ async function init(): Promise<void> {
                 .create('payment', {
                     layout: 'tabs',
                     fields: { billingDetails: { name: 'never', email: 'never', address: { country: 'never', postalCode: 'never' } } },
+                })
+                .on('change', (change: { complete?: boolean }) => {
+                    if (change.complete && !paymentInfoSent) {
+                        paymentInfoSent = true;
+                        track('add_payment_info');
+                    }
                 })
                 .mount(mount);
         } catch {

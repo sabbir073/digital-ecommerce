@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\User;
 use App\Services\Checkout\CartService;
 use App\Services\Checkout\CheckoutService;
+use App\Services\Integrations\Tracking;
 use App\Services\Payments\PaymentGateway;
 use App\Services\StoreSettings;
 use Illuminate\Contracts\View\View;
@@ -41,6 +42,7 @@ class CheckoutController extends Controller
 
         return view('storefront.checkout', [
             'summary' => $summary,
+            'trackEvents' => [Tracking::beginCheckout($summary)],
             'buyNow' => $buyNow,
             'countries' => config('countries'),
             'customer' => [

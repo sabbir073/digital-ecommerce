@@ -33,6 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Runs before routing, so an old address is redirected even though no route matches it.
         $middleware->append(HandleRedirects::class);
         $middleware->web(append: [MaintenanceMode::class]);
+        // Written by scripts in the browser, so they are not encrypted: the cookie choice and the ad services' own IDs.
+        $middleware->encryptCookies(except: ['cc', '_fbp', '_fbc', '_ttp']);
         // Stripe's webhook is verified by its signature instead of a CSRF token.
         $middleware->validateCsrfTokens(except: ['stripe/webhook']);
         $middleware->redirectUsersTo(fn (Request $request) => $request->is('admin', 'admin/*') ? '/admin' : '/account');

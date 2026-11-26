@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\HomePageController;
+use App\Http\Controllers\Admin\IntegrationController;
 use App\Http\Controllers\Admin\InterfaceTextController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
@@ -227,6 +228,23 @@ Route::middleware('admin.auth')->group(function () {
     Route::get('seo/{type}/{id?}', [SeoController::class, 'edit'])->middleware('permission:seo,view')->whereNumber('id')->name('seo.edit');
     Route::post('seo-check/{type}/{id?}', [SeoController::class, 'check'])->middleware('permission:seo,view')->whereNumber('id')->name('seo.check');
     Route::put('seo/{type}/{id?}', [SeoController::class, 'update'])->middleware('permission:seo,edit')->whereNumber('id')->name('seo.update');
+
+    // Integrations: a card per service, cookie banner, email sending, custom scripts, event log
+    Route::get('integrations', [IntegrationController::class, 'index'])->middleware('permission:integrations,view')->name('integrations.index');
+    Route::get('integrations/log', [IntegrationController::class, 'log'])->middleware('permission:integrations,view')->name('integrations.log');
+    Route::delete('integrations/log', [IntegrationController::class, 'clearLog'])->middleware('permission:integrations,delete')->name('integrations.log.clear');
+    Route::put('integrations/logging', [IntegrationController::class, 'updateLogging'])->middleware('permission:integrations,edit')->name('integrations.logging');
+    Route::get('integrations/consent', [IntegrationController::class, 'consent'])->middleware('permission:integrations,view')->name('integrations.consent');
+    Route::put('integrations/consent', [IntegrationController::class, 'updateConsent'])->middleware('permission:integrations,edit')->name('integrations.consent.update');
+    Route::get('integrations/email', [IntegrationController::class, 'email'])->middleware('permission:integrations,view')->name('integrations.email');
+    Route::put('integrations/email', [IntegrationController::class, 'updateEmail'])->middleware('permission:integrations,edit')->name('integrations.email.update');
+    Route::post('integrations/email/test', [IntegrationController::class, 'testEmail'])->middleware(['permission:integrations,edit', 'throttle:6,1'])->name('integrations.email.test');
+    Route::get('integrations/scripts', [IntegrationController::class, 'scripts'])->middleware('permission:integrations,view')->name('integrations.scripts');
+    Route::put('integrations/scripts', [IntegrationController::class, 'updateScripts'])->middleware('permission:integrations,edit')->name('integrations.scripts.update');
+    Route::put('integrations/{service}', [IntegrationController::class, 'update'])->middleware('permission:integrations,edit')->name('integrations.update');
+    Route::post('integrations/{service}/test', [IntegrationController::class, 'test'])->middleware(['permission:integrations,edit', 'throttle:12,1'])->name('integrations.test');
+    Route::delete('integrations/{service}/{field}', [IntegrationController::class, 'forget'])->middleware('permission:integrations,edit')->name('integrations.forget');
+    Route::put('selling-pages/{page}/pixels', [IntegrationController::class, 'updatePagePixels'])->middleware('permission:selling_pages,edit')->name('selling-pages.pixels');
 
     // Payment settings (Stripe keys are Super Admin only, enforced in the controller)
     Route::get('settings/payments', [PaymentSettingsController::class, 'edit'])->middleware('permission:settings,view')->name('settings.payments');

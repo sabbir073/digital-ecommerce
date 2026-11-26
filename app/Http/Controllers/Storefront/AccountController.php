@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Storefront;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\Integrations\Tracking;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -80,6 +81,8 @@ class AccountController extends Controller
         $user = User::create(['name' => $data['name'], 'email' => Str::lower($data['email']), 'password' => $data['password']]);
         Auth::login($user);
         $request->session()->regenerate();
+
+        Tracking::flash(Tracking::event('sign_up', ['method' => 'email']));
 
         return redirect()->route('account')->with('success', t('Your account is ready.'));
     }

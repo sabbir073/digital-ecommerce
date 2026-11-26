@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Services\Checkout\CartService;
+use App\Services\Integrations\Tracking;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,9 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
+    /** @var array<string, mixed>|null the add-to-cart event of this request */
+    private ?array $track = null;
+
     public function __construct(private readonly CartService $carts) {}
 
     public function show(): View
@@ -48,6 +52,7 @@ class CartController extends Controller
             if (($data['intent'] ?? 'cart') === 'buy') {
                 // Buy now: straight to checkout with only this item; the shopper's cart is left alone.
                 $this->carts->buyNow($product, $variant, $quantity);
+                Tracking::flash(Tracking::addToCart($product, $variant, $quantity, (int) ($variant?->price_cents ?? $product->price_cents)));
 
                 return $request->expectsJson()
                     ? response()->json(['redirect' => route('checkout', ['buy' => 1])])
@@ -55,6 +60,7 @@ class CartController extends Controller
             }
 
             $this->carts->add($this->carts->current(create: true), $product, $variant, $quantity);
+            $this->track = Tracking::addToCart($product, $variant, $quantity, (int) ($variant?->price_cents ?? $product->price_cents));
         } catch (CheckoutException $e) {
             return $this->respond(error: $e->getMessage());
         }
@@ -111,6 +117,10 @@ class CartController extends Controller
     private function respond(?string $message = null, ?string $error = null): JsonResponse|RedirectResponse
     {
         if (! request()->expectsJson()) {
+            if ($this->track && ! $error) {
+                Tracking::flash($this->track);
+            }
+
             return back()->with($error ? 'error' : 'success', $error ?? $message);
         }
 
@@ -121,6 +131,8 @@ class CartController extends Controller
             'count' => $summary->count(),
             'message' => $message,
             'error' => $error,
+            // The storefront script hands this to the tracking layer.
+            'track' => $error ? null : $this->track,
         ], $error ? 422 : 200);
     }
 }

@@ -1,4 +1,5 @@
-import { router } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
 import Add from '@mui/icons-material/Add';
 import Close from '@mui/icons-material/Close';
 import DashboardCustomizeOutlined from '@mui/icons-material/DashboardCustomizeOutlined';
@@ -46,9 +47,32 @@ interface Props {
     products: ProductOption[];
     blockCount: number;
     problems: string[];
+    pixels: { service: string; label: string; value: string }[];
 }
 
-export default function SellingPageEdit({ page, offers: savedOffers, products, blockCount, problems }: Props) {
+/** Tracking IDs used on this page only, on top of the ones under Integrations. Saved on their own. */
+function PagePixels({ pageId, pixels, canEdit }: { pageId: number; pixels: Props['pixels']; canEdit: boolean }) {
+    const form = useForm({ pixels: Object.fromEntries(pixels.map((pixel) => [pixel.service, pixel.value])) as Record<string, string> });
+    const errors = form.errors as Record<string, string>;
+
+    return (
+        <Card component="form" noValidate sx={{ p: 3 }} onSubmit={(event: FormEvent) => { event.preventDefault(); form.put(`/admin/selling-pages/${pageId}/pixels`, { preserveScroll: true, onSuccess: () => form.setDefaults() }); }}>
+            <Typography variant="h4" component="h2">Extra tracking IDs for this page</Typography>
+            <Typography sx={{ color: 'text.secondary', mt: 0.5, mb: 2.5 }}>
+                Optional. For a campaign that reports to its own pixel. Events on this page go to these IDs as well as the ones under Integrations. An ID entered here is used on this page even when that service is switched off under Integrations. Leave a field empty to use only the site-wide ID.
+            </Typography>
+            <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
+                {pixels.map((pixel) => (
+                    <TextField key={pixel.service} size="small" label={pixel.label} disabled={!canEdit} value={form.data.pixels[pixel.service] ?? ''} onChange={(e) => form.setData('pixels', { ...form.data.pixels, [pixel.service]: e.target.value })}
+                        error={!!errors[`pixels.${pixel.service}`]} helperText={errors[`pixels.${pixel.service}`]} slotProps={{ htmlInput: { maxLength: 60, spellCheck: false } }} />
+                ))}
+            </Box>
+            {canEdit && <Button type="submit" variant="outlined" loading={form.processing} disabled={!form.isDirty} sx={{ mt: 2.5 }}>Save tracking IDs</Button>}
+        </Card>
+    );
+}
+
+export default function SellingPageEdit({ page, offers: savedOffers, products, blockCount, problems, pixels }: Props) {
     const can = useCan();
     const canEdit = can('selling_pages', 'edit');
     const canPublish = can('selling_pages', 'publish');
@@ -239,6 +263,8 @@ export default function SellingPageEdit({ page, offers: savedOffers, products, b
                         <Button variant="contained" component={RouterLink} href={`/admin/selling-pages/${page.id}/builder`} startIcon={<DashboardCustomizeOutlined />} sx={{ flexShrink: 0 }}>Open builder</Button>
                     </Stack>
                 </Card>
+
+                <PagePixels pageId={page.id} pixels={pixels} canEdit={canEdit} />
             </Stack>
 
         </AdminLayout>
