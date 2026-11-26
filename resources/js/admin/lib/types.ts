@@ -18,3 +18,17 @@ export interface Paginated<T> {
     from: number | null;
     to: number | null;
 }
+
+export interface MediaItem {
+    id: number;
+    url: string;
+    thumb: string | null;
+    filename: string;
+    type: 'image' | 'video';
+    alt: string | null;
+    width: number | null;
+    height: number | null;
+    sizeBytes: number;
+    folderId: number | null;
+    createdAt: string | null;
+}

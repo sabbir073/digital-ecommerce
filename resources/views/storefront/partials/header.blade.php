@@ -43,17 +43,23 @@
                 </a>
             @endif
 
-            @if ($navCategories->isNotEmpty())
-                <button type="button" class="icon-btn lg:hidden" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Menu">
+            @if ($navCategories->isNotEmpty() || Route::has('search'))
+                <button type="button" class="icon-btn {{ $navCategories->isEmpty() ? 'md:hidden' : 'lg:hidden' }}" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Menu">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
                 </button>
             @endif
         </div>
     </div>
 
-    @if ($navCategories->isNotEmpty())
-        <nav id="mobile-menu" data-menu-panel hidden aria-label="Categories" class="border-t border-line lg:hidden">
+    @if ($navCategories->isNotEmpty() || Route::has('search'))
+        <nav id="mobile-menu" data-menu-panel hidden aria-label="Menu" class="border-t border-line lg:hidden">
             <div class="container-store flex flex-col py-3">
+                @if (Route::has('search'))
+                    <form action="{{ route('search') }}" method="get" role="search" class="mb-2 md:hidden">
+                        <label for="menu-search" class="sr-only">Search products</label>
+                        <input id="menu-search" type="search" name="q" placeholder="Search products" class="h-12 w-full rounded-full bg-soft px-5 placeholder:text-muted focus:outline-2 focus:outline-accent">
+                    </form>
+                @endif
                 @foreach ($navCategories as $category)
                     <a href="{{ url('/c/'.$category->slug) }}" class="nav-link">{{ $category->name }}</a>
                 @endforeach

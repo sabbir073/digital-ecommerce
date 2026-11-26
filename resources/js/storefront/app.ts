@@ -37,5 +37,13 @@ function mobileMenu(): void {
     });
 }
 
+/** Filter controls marked data-autosubmit apply as soon as they change. */
+function autoSubmit(): void {
+    document.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-autosubmit]').forEach((control) => {
+        control.addEventListener('change', () => control.form?.requestSubmit());
+    });
+}
+
 document.addEventListener('pointerdown', ripple, { passive: true });
+autoSubmit();
 mobileMenu();
