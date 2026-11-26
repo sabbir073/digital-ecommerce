@@ -6,8 +6,10 @@ use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Menu;
 use App\Models\Setting;
+use App\Services\Chat\ChatSettings;
 use App\Services\Checkout\CartService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /** Data every storefront page needs for the shared header and footer. */
@@ -43,7 +45,24 @@ class StorefrontComposer
             'navCategories' => Category::query()->whereNull('parent_id')->orderBy('position')->get(['id', 'name', 'slug']),
             'footerMenus' => Menu::query()->where('location', 'like', 'footer%')->with('items')->orderBy('location')->get(),
             'cartCount' => $this->cartCount(),
+            'chat' => $this->chat(),
         ];
+    }
+
+    /**
+     * What the chat widget needs, or null when chat is switched off.
+     *
+     * @return array{welcome:string, away:string, onSellingPages:bool, name:?string, email:?string}|null
+     */
+    private function chat(): ?array
+    {
+        $settings = app(ChatSettings::class)->all();
+        if (! $settings['enabled']) {
+            return null;
+        }
+        $user = Auth::guard('web')->user();
+
+        return ['welcome' => $settings['welcome'], 'away' => $settings['away'], 'onSellingPages' => (bool) $settings['on_selling_pages'], 'name' => $user?->name, 'email' => $user?->email];
     }
 
     private function cartCount(): int

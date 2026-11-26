@@ -3,9 +3,9 @@
 A CMS-driven store for digital products, with a normal catalog checkout and one-page selling pages.
 Built with Laravel 13, React, Tailwind CSS, Material UI (admin) and MySQL.
 
-The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains **Phase 1: Foundation**.
+The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains Phases 1 to 7.
 
-## What works today (Phases 1 to 6)
+## What works today (Phases 1 to 7)
 
 - Design tokens from PRD section 8, shared by the storefront (Tailwind) and the admin panel (Material UI theme).
 - Shared storefront header and footer, with the announcement bar and category navigation read from the database.
@@ -32,6 +32,8 @@ The product requirements and the approved build plan live in the project documen
 - Review request email: sent a set number of days after payment by `reviews:send-requests` (scheduled hourly), with a link per item that needs no sign-in.
 - Admin > Reviews: queue with status tabs, search and filters, bulk approve, reject and delete, public reply, pin, country correction, photo removal and reports. Genuine reviews collected elsewhere can be added by hand or imported by CSV and always show a source label. There is no feature that writes review text.
 - Admin > Reviews > Settings: who may review, auto-approval of verified buyers, holding reviews with links or blocked words, the request email and its delay, flags on or off, the home page section, and an optional Cloudflare Turnstile captcha.
+- Live chat: a chat button on the store (and on selling pages if switched on) where visitors write to the team. It needs no outside service: the widget and the inbox ask the server for new messages every 3 seconds, so it works on ordinary cPanel hosting. The chat belongs to the visitor's browser through a secret cookie, of which only a hash is stored.
+- Admin > Live chat: inbox with open and closed conversations, unread counts, replying, take over, close, reopen and delete. Visitors see the team as online while someone has the inbox open. When nobody is there, the visitor is asked for an email and the store's notification address gets an email; a reply written after the visitor has left is also sent to their email.
 
 ## Local setup
 

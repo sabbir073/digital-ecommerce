@@ -40,6 +40,8 @@
             <div class="drawer-body" data-cart-root aria-live="polite"></div>
         </aside>
     </div>
+    @include('storefront.partials.chat')
+
     @stack('end')
 </body>
 </html>

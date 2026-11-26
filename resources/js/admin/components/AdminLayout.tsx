@@ -6,6 +6,7 @@ import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
+import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import StarBorderOutlined from '@mui/icons-material/StarBorderOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
@@ -70,6 +71,7 @@ const NAV: { heading: string; items: NavItem[] }[] = [
             { label: 'Selling pages', href: '/admin/selling-pages', icon: <WebOutlined />, module: 'selling_pages', match: (p) => p.startsWith('/admin/selling-pages') },
             { label: 'Coupons', href: '/admin/coupons', icon: <LocalOfferOutlined />, module: 'coupons', match: (p) => p.startsWith('/admin/coupons') },
             { label: 'Reviews', href: '/admin/reviews', icon: <StarBorderOutlined />, module: 'reviews', match: (p) => p.startsWith('/admin/reviews') },
+            { label: 'Live chat', href: '/admin/chat', icon: <ChatBubbleOutlineOutlined />, module: 'chat', match: (p) => p.startsWith('/admin/chat') },
         ],
     },
     {

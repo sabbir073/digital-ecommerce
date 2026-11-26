@@ -3,6 +3,7 @@
 use App\Http\Controllers\Storefront\AccountController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CatalogController;
+use App\Http\Controllers\Storefront\ChatController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\OrderController;
@@ -26,6 +27,11 @@ Route::get('/review/{token}', [ReviewController::class, 'invited'])->name('revie
 Route::post('/review/{token}', [ReviewController::class, 'storeInvited'])->middleware('throttle:review')->name('review.invited.store');
 Route::post('/reviews/{review}/helpful', [ReviewController::class, 'helpful'])->middleware('throttle:review-vote')->name('reviews.helpful');
 Route::post('/reviews/{review}/report', [ReviewController::class, 'report'])->middleware('throttle:review-vote')->name('reviews.report');
+
+// Live chat widget
+Route::get('/chat/state', [ChatController::class, 'state'])->middleware('throttle:chat-poll')->name('chat.state');
+Route::post('/chat/start', [ChatController::class, 'start'])->middleware('throttle:chat-start')->name('chat.start');
+Route::post('/chat/messages', [ChatController::class, 'send'])->middleware('throttle:chat-send')->name('chat.send');
 
 // Cart
 Route::get('/cart', [CartController::class, 'show'])->name('cart');
