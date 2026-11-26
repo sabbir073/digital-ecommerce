@@ -1,12 +1,13 @@
 import { router } from '@inertiajs/react';
+import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -36,7 +37,7 @@ export interface OrderRow {
 
 interface Props {
     orders: Paginated<OrderRow>;
-    filters: { search: string; status: string };
+    filters: { search: string; status: string; source: string; from: string; to: string };
     statuses: Record<string, string>;
 }
 
@@ -69,19 +70,29 @@ export default function OrdersIndex({ orders, filters, statuses }: Props) {
     }, [search]);
 
     return (
-        <AdminLayout title="Orders">
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
-                <TextField label="Search" placeholder="Order number, email or name" value={search} onChange={(e) => setSearch(e.target.value)} sx={{ flex: 1 }} slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchOutlined /></InputAdornment> } }} />
-                <TextField select label="Status" value={filters.status} onChange={(e) => go({ status: e.target.value })} sx={{ minWidth: 220 }} slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}>
+        <AdminLayout
+            title="Orders"
+            actions={<Button component="a" href={`/admin/orders/export?${new URLSearchParams(Object.entries(filters).filter(([, v]) => v !== '')).toString()}`} variant="outlined" startIcon={<FileDownloadOutlined />}>Export CSV</Button>}
+        >
+            <Box sx={{ display: 'grid', gap: 2, mb: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'minmax(0, 2fr) repeat(4, minmax(0, 1fr))' } }}>
+                <TextField label="Search" placeholder="Order number, email or name" value={search} onChange={(e) => setSearch(e.target.value)} sx={{ gridColumn: { sm: '1 / -1', lg: 'auto' } }} slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchOutlined /></InputAdornment> } }} />
+                <TextField select label="Status" value={filters.status} onChange={(e) => go({ status: e.target.value })} slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}>
                     <MenuItem value="">Paid and refunded</MenuItem>
                     {Object.entries(statuses).map(([value, label]) => <MenuItem key={value} value={value}>{label}</MenuItem>)}
                 </TextField>
-            </Stack>
+                <TextField select label="Source" value={filters.source} onChange={(e) => go({ source: e.target.value })} slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}>
+                    <MenuItem value="">Any source</MenuItem>
+                    <MenuItem value="cart">Cart</MenuItem>
+                    <MenuItem value="selling_page">Selling page</MenuItem>
+                </TextField>
+                <TextField label="From" type="date" value={filters.from} onChange={(e) => go({ from: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+                <TextField label="To" type="date" value={filters.to} onChange={(e) => go({ to: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
+            </Box>
 
             {orders.data.length === 0 ? (
                 <Card sx={{ p: 6, textAlign: 'center' }}>
                     <Typography variant="h4" component="p" sx={{ mb: 0.5 }}>No orders found</Typography>
-                    <Typography sx={{ color: 'text.secondary' }}>{filters.search || filters.status ? 'Try a different search or status.' : 'Paid orders appear here as soon as Stripe confirms them.'}</Typography>
+                    <Typography sx={{ color: 'text.secondary' }}>{Object.values(filters).some(Boolean) ? 'Try a different search or filter.' : 'Paid orders appear here as soon as Stripe confirms them.'}</Typography>
                 </Card>
             ) : (
                 <Card>

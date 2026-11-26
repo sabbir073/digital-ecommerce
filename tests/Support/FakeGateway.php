@@ -27,6 +27,12 @@ class FakeGateway implements PaymentGateway
 
     public int $createCalls = 0;
 
+    /** @var list<array{intent:string, amount:int, key:string, reason:?string}> */
+    public array $refunds = [];
+
+    /** When set, the next refund is refused with this message. */
+    public ?string $refundError = null;
+
     public function isConfigured(): bool
     {
         return $this->configured;
@@ -90,6 +96,11 @@ class FakeGateway implements PaymentGateway
 
     public function refund(string $paymentIntentId, int $amountCents, string $idempotencyKey, ?string $reason = null): array
     {
+        if ($this->refundError !== null) {
+            throw new \RuntimeException($this->refundError);
+        }
+        $this->refunds[] = ['intent' => $paymentIntentId, 'amount' => $amountCents, 'key' => $idempotencyKey, 'reason' => $reason];
+
         return ['id' => 're_fake_'.md5($idempotencyKey), 'amount' => $amountCents, 'status' => 'succeeded'];
     }
 

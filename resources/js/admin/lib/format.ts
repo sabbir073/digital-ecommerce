@@ -12,6 +12,7 @@ const ACTIONS: Record<string, string> = {
     delete: 'Deleted',
     publish: 'Published',
     refund: 'Refunded',
+    export: 'Exported',
     invite: 'Invited',
     resend_invite: 'Sent invitation again to',
     accept_invite: 'Accepted invitation',

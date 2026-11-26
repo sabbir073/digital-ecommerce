@@ -20,7 +20,7 @@ class AccountController extends Controller
 {
     public function index(Request $request): View
     {
-        $user = $request->user();
+        $user = $request->user('web');
 
         // Orders placed while signed in. Guest orders with the same email are added only once the
         // address is verified, so nobody can claim another person's orders by registering their email.

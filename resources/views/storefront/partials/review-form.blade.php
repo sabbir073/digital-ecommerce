@@ -4,7 +4,7 @@
     @if (! $form['allowed'])
         <p class="mt-3 text-muted">
             Reviews here are written by customers who bought from us.
-            @guest <a href="{{ route('login') }}" class="font-medium text-accent hover:underline">Sign in</a> to the account you ordered with, or use the link in your review email. @endguest
+            @guest('web') <a href="{{ route('login') }}" class="font-medium text-accent hover:underline">Sign in</a> to the account you ordered with, or use the link in your review email. @endguest
         </p>
     @else
         @if ($form['verified'])

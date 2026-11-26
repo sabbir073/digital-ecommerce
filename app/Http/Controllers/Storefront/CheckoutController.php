@@ -36,7 +36,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart');
         }
 
-        $user = Auth::user();
+        $user = Auth::guard('web')->user();
 
         return view('storefront.checkout', [
             'summary' => $summary,
@@ -88,7 +88,7 @@ class CheckoutController extends Controller
             'country' => ['required', Rule::in(array_keys(config('countries')))],
             'postcode' => [Rule::requiredIf(fn () => in_array($request->input('country'), ['US', 'CA'], true)), 'nullable', 'string', 'max:20'],
             'create_account' => ['boolean'],
-            'password' => [Rule::requiredIf(fn () => $request->boolean('create_account') && ! Auth::check()), 'nullable', Password::min(8)],
+            'password' => [Rule::requiredIf(fn () => $request->boolean('create_account') && ! Auth::guard('web')->check()), 'nullable', Password::min(8)],
         ], [
             'email.required' => 'Enter your email so we can send your download links.',
             'email.email' => 'That email address does not look right.',
@@ -106,7 +106,7 @@ class CheckoutController extends Controller
             return response()->json(['errors' => ['checkout' => ['Your cart is empty.']]], 422);
         }
 
-        $user = Auth::user();
+        $user = Auth::guard('web')->user();
         if (! $user && $request->boolean('create_account')) {
             if (User::query()->where('email', $data['email'])->exists()) {
                 return response()->json(['errors' => ['email' => ['An account with this email already exists. Sign in, or untick "Create an account".']]], 422);

@@ -7,6 +7,7 @@ import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import PeopleAltOutlined from '@mui/icons-material/PeopleAltOutlined';
 import StarBorderOutlined from '@mui/icons-material/StarBorderOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
@@ -68,6 +69,7 @@ const NAV: { heading: string; items: NavItem[] }[] = [
         heading: 'Sales',
         items: [
             { label: 'Orders', href: '/admin/orders', icon: <ReceiptLongOutlined />, module: 'orders', match: (p) => p.startsWith('/admin/orders') },
+            { label: 'Customers', href: '/admin/customers', icon: <PeopleAltOutlined />, module: 'customers', match: (p) => p.startsWith('/admin/customers') },
             { label: 'Selling pages', href: '/admin/selling-pages', icon: <WebOutlined />, module: 'selling_pages', match: (p) => p.startsWith('/admin/selling-pages') },
             { label: 'Coupons', href: '/admin/coupons', icon: <LocalOfferOutlined />, module: 'coupons', match: (p) => p.startsWith('/admin/coupons') },
             { label: 'Reviews', href: '/admin/reviews', icon: <StarBorderOutlined />, module: 'reviews', match: (p) => p.startsWith('/admin/reviews') },

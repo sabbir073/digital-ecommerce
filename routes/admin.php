@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ChatController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
@@ -110,7 +111,18 @@ Route::middleware('admin.auth')->group(function () {
 
     // Orders
     Route::get('orders', [OrderController::class, 'index'])->middleware('permission:orders,view')->name('orders.index');
+    Route::get('orders/export', [OrderController::class, 'export'])->middleware('permission:orders,view')->name('orders.export');
     Route::get('orders/{order}', [OrderController::class, 'show'])->middleware('permission:orders,view')->name('orders.show');
+    Route::post('orders/{order}/refund', [OrderController::class, 'refund'])->middleware(['permission:refunds,create', 'throttle:20,1'])->name('orders.refund');
+    Route::post('orders/{order}/resend', [OrderController::class, 'resend'])->middleware(['permission:orders,edit', 'throttle:20,1'])->name('orders.resend');
+    Route::post('orders/{order}/downloads/renew', [OrderController::class, 'renewDownloads'])->middleware('permission:orders,edit')->name('orders.downloads.renew');
+    Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->middleware('permission:orders,edit')->name('orders.cancel');
+    Route::post('orders/{order}/notes', [OrderController::class, 'note'])->middleware('permission:orders,edit')->name('orders.note');
+
+    // Customers
+    Route::get('customers', [CustomerController::class, 'index'])->middleware('permission:customers,view')->name('customers.index');
+    Route::get('customers/export', [CustomerController::class, 'export'])->middleware('permission:customers,view')->name('customers.export');
+    Route::get('customers/view', [CustomerController::class, 'show'])->middleware('permission:customers,view')->name('customers.show');
 
     // Coupons
     Route::get('reviews', [ReviewController::class, 'index'])->middleware('permission:reviews,view')->name('reviews.index');

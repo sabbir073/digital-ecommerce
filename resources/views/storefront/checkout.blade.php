@@ -53,7 +53,7 @@
                         </div>
                     </div>
 
-                    @guest
+                    @guest('web')
                         <label class="check mt-4">
                             <input type="checkbox" name="create_account" value="1" data-account-toggle>
                             <span>Create an account to see my orders and downloads later</span>

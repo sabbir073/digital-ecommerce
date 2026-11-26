@@ -153,7 +153,7 @@ class SellingPageController extends Controller
                 'selling_page_id' => $page->id,
                 'offer_id' => $offer->id,
                 'checkout_key' => $this->checkoutKey($request, $page),
-                'user_id' => Auth::id(),
+                'user_id' => Auth::guard('web')->id(),
                 'ip' => $request->ip(),
             ]);
         } catch (CheckoutException $e) {
