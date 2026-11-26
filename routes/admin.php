@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ChatController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InvitationController;
@@ -122,6 +123,13 @@ Route::middleware('admin.auth')->group(function () {
     Route::put('reviews/{review}', [ReviewController::class, 'update'])->middleware('permission:reviews,edit')->name('reviews.update');
     Route::delete('reviews/{review}/photos/{media}', [ReviewController::class, 'removePhoto'])->middleware('permission:reviews,edit')->name('reviews.photos.destroy');
     Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->middleware('permission:reviews,delete')->name('reviews.destroy');
+
+    Route::get('chat', [ChatController::class, 'index'])->middleware('permission:chat,view')->name('chat.index');
+    Route::get('chat/poll', [ChatController::class, 'poll'])->middleware('permission:chat,view')->name('chat.poll');
+    Route::put('chat/settings', [ChatController::class, 'saveSettings'])->middleware('permission:chat,edit')->name('chat.settings');
+    Route::post('chat/{conversation}/messages', [ChatController::class, 'reply'])->middleware('permission:chat,edit')->name('chat.reply');
+    Route::put('chat/{conversation}', [ChatController::class, 'update'])->middleware('permission:chat,edit')->name('chat.update');
+    Route::delete('chat/{conversation}', [ChatController::class, 'destroy'])->middleware('permission:chat,delete')->name('chat.destroy');
 
     Route::get('coupons', [CouponController::class, 'index'])->middleware('permission:coupons,view')->name('coupons.index');
     Route::post('coupons', [CouponController::class, 'store'])->middleware('permission:coupons,create')->name('coupons.store');

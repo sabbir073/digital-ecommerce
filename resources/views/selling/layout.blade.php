@@ -39,6 +39,11 @@
         <span>Secure card payment by Stripe</span>
     </footer>
 
+    @if (! ($builder ?? false) && ($chat['onSellingPages'] ?? false))
+        {{-- Raised on phones so it does not cover the order bar. --}}
+        @include('storefront.partials.chat', ['chatClass' => 'chat-raised'])
+    @endif
+
     @stack('end')
 </body>
 </html>

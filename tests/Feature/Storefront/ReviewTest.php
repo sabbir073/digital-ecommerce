@@ -196,7 +196,7 @@ class ReviewTest extends CheckoutTestCase
 
         // The link works without signing in.
         $this->get('/review/not-a-real-token')->assertNotFound();
-        $this->get($invitation->url())->assertOk()->assertSee('How was Preset Pack?')->assertSee('Verified buyer')->assertDontSee('name="email"', false);
+        $this->get($invitation->url())->assertOk()->assertSee('How was Preset Pack?')->assertSee('Verified buyer')->assertDontSee('id="rv-email"', false);
         $this->post($invitation->url(), $this->form(['email' => null, 'country_code' => 'BD']))->assertSessionHas('success');
 
         $review = Review::query()->firstOrFail();
