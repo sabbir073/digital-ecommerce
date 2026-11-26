@@ -16,6 +16,7 @@
         @vite(['resources/css/app.css', 'resources/js/storefront/app.ts', 'resources/js/storefront/selling.ts'])
     @endif
     @stack('head')
+    @include('storefront.partials.theme-head')
 </head>
 <body class="bg-surface text-ink">
     <a href="#main" class="skip-link">Skip to content</a>
@@ -23,7 +24,7 @@
     {{-- No store navigation here, so nothing pulls the customer away from the page. --}}
     <header class="border-b border-line bg-surface">
         <div class="container-selling flex h-16 items-center justify-between gap-4">
-            <span class="font-heading text-[20px] font-bold tracking-tight">{{ $storeName }}</span>
+            <span class="font-heading text-[20px] font-bold tracking-tight">@include('storefront.partials.logo')</span>
             @hasSection('header-action')
                 @yield('header-action')
             @endif

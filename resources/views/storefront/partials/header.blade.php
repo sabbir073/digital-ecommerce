@@ -12,7 +12,9 @@
 
 <header class="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur">
     <div class="container-store flex h-16 items-center gap-4 lg:h-[72px]">
-        <a href="{{ url('/') }}" class="font-heading text-[20px] font-bold tracking-tight">{{ $storeName }}</a>
+        <a href="{{ url('/') }}" class="font-heading text-[20px] font-bold tracking-tight">
+            @include('storefront.partials.logo')
+        </a>
 
         @if ($navLinks !== [])
             <nav aria-label="Main" class="ml-4 hidden items-center gap-1 lg:flex">

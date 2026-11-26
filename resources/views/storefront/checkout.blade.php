@@ -53,12 +53,18 @@
                         </div>
                     </div>
 
+                    @include('storefront.partials.checkout-extras', ['prefix' => 'co'])
+
                     @guest('web')
-                        <label class="check mt-4">
-                            <input type="checkbox" name="create_account" value="1" data-account-toggle>
-                            <span>Create an account to see my orders and downloads later</span>
-                        </label>
-                        <div class="mt-3" data-account-fields hidden>
+                        @if ($checkoutFields['guest_checkout'])
+                            <label class="check mt-4">
+                                <input type="checkbox" name="create_account" value="1" data-account-toggle>
+                                <span>Create an account to see my orders and downloads later</span>
+                            </label>
+                        @else
+                            <p class="mt-4 text-muted">Orders need an account. Choose a password to make one, or <a href="{{ route('login') }}" class="underline">sign in</a>.</p>
+                        @endif
+                        <div class="mt-3" data-account-fields @if ($checkoutFields['guest_checkout']) hidden @else data-account-required @endif>
                             <label class="field-label" for="co-password">Password</label>
                             <input class="field" id="co-password" name="password" type="password" autocomplete="new-password" minlength="8" aria-describedby="err-password">
                             <p class="field-error" id="err-password" data-error="password" role="alert"></p>

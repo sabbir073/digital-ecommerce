@@ -1,3 +1,4 @@
+import { extraProblems, extras } from './checkout-extras';
 // One-page selling page: Order-now links, the mobile order bar, countdown, click-to-play video
 // and the inline checkout. Card details go from the browser straight to Stripe.
 
@@ -421,7 +422,13 @@ async function checkout(): Promise<void> {
             name: (field('name')?.value ?? '').trim(),
             country: field('country')?.value ?? '',
             postcode: (field('postcode')?.value ?? '').trim(),
+            ...extras(form),
         };
+        const extraErrors = extraProblems(form);
+        if (Object.keys(extraErrors).length > 0) {
+            Object.entries(extraErrors).forEach(([name, messages]) => setError(name, messages[0] ?? ''));
+            return;
+        }
 
         let waiting = false;
         setBusy(true);

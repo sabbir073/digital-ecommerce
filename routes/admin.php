@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ContentPageController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\HomePageController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
@@ -24,6 +25,8 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SecuritySettingsController;
 use App\Http\Controllers\Admin\SellingPageController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\StoreSettingsController;
+use App\Http\Controllers\Admin\ThemeController;
 use Illuminate\Support\Facades\Route;
 
 // Registered in bootstrap/app.php with the /admin prefix and the admin. name prefix.
@@ -131,6 +134,7 @@ Route::middleware('admin.auth')->group(function () {
 
     // Coupons
     Route::get('reviews', [ReviewController::class, 'index'])->middleware('permission:reviews,view')->name('reviews.index');
+    Route::get('reviews/export', [ReviewController::class, 'export'])->middleware('permission:reviews,view')->name('reviews.export');
     Route::get('reviews/import-format', [ReviewController::class, 'sample'])->middleware('permission:reviews,view')->name('reviews.sample');
     Route::get('reviews/settings', [ReviewController::class, 'settings'])->middleware('permission:reviews,view')->name('reviews.settings');
     Route::put('reviews/settings', [ReviewController::class, 'saveSettings'])->middleware('permission:reviews,edit')->name('reviews.settings.update');
@@ -182,6 +186,20 @@ Route::middleware('admin.auth')->group(function () {
     Route::get('messages', [MessageController::class, 'index'])->middleware('permission:chat,view')->name('messages.index');
     Route::put('messages/{message}', [MessageController::class, 'update'])->middleware('permission:chat,edit')->name('messages.update');
     Route::delete('messages/{message}', [MessageController::class, 'destroy'])->middleware('permission:chat,delete')->name('messages.destroy');
+
+    // Store settings and theme
+    Route::get('settings/store', [StoreSettingsController::class, 'edit'])->middleware('permission:settings,view')->name('settings.store');
+    Route::put('settings/store/details', [StoreSettingsController::class, 'updateDetails'])->middleware('permission:settings,edit')->name('settings.store.details');
+    Route::put('settings/store/checkout', [StoreSettingsController::class, 'updateCheckout'])->middleware('permission:settings,edit')->name('settings.store.checkout');
+    Route::put('settings/store/stock', [StoreSettingsController::class, 'updateStock'])->middleware('permission:settings,edit')->name('settings.store.stock');
+    Route::put('settings/store/maintenance', [StoreSettingsController::class, 'updateMaintenance'])->middleware('permission:settings,edit')->name('settings.store.maintenance');
+    Route::get('settings/theme', [ThemeController::class, 'edit'])->middleware('permission:theme,view')->name('settings.theme');
+    Route::put('settings/theme', [ThemeController::class, 'update'])->middleware('permission:theme,edit')->name('settings.theme.update');
+
+    Route::get('settings/emails', [EmailTemplateController::class, 'index'])->middleware('permission:settings,view')->name('settings.emails');
+    Route::put('settings/emails/{key}', [EmailTemplateController::class, 'update'])->middleware('permission:settings,edit')->name('settings.emails.update');
+    Route::delete('settings/emails/{key}', [EmailTemplateController::class, 'reset'])->middleware('permission:settings,edit')->name('settings.emails.reset');
+    Route::post('settings/emails/{key}/preview', [EmailTemplateController::class, 'preview'])->middleware('permission:settings,view')->name('settings.emails.preview');
 
     // Payment settings (Stripe keys are Super Admin only, enforced in the controller)
     Route::get('settings/payments', [PaymentSettingsController::class, 'edit'])->middleware('permission:settings,view')->name('settings.payments');

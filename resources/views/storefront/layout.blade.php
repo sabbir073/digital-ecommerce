@@ -14,9 +14,10 @@
     @else
         @vite(['resources/css/app.css', 'resources/js/storefront/app.ts'])
     @endif
+    @include('storefront.partials.theme-head')
     @stack('head')
 </head>
-<body class="flex min-h-screen flex-col bg-surface text-ink">
+<body class="flex min-h-screen flex-col bg-surface text-ink grid-{{ $theme['density'] }}">
     <a href="#main" class="skip-link">Skip to content</a>
 
     @include('storefront.partials.header')

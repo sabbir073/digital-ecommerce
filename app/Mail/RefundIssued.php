@@ -2,34 +2,42 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\UsesEmailTemplate;
 use App\Models\Order;
-use App\Models\Setting;
 use App\Support\Money;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class RefundIssued extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, UsesEmailTemplate;
 
     public function __construct(public Order $order, public int $amountCents) {}
 
-    public function envelope(): Envelope
+    protected function templateKey(): string
     {
-        return new Envelope(subject: "Refund for your order {$this->order->number}");
+        return 'refund_issued';
     }
 
-    public function content(): Content
+    protected function templateVariables(): array
     {
-        return new Content(markdown: 'emails.refund-issued', with: [
-            'order' => $this->order,
-            'amount' => Money::format($this->amountCents),
-            'full' => $this->order->status === Order::REFUNDED,
-            'storeName' => Setting::get('store.name', config('app.name')),
-        ]);
+        return [
+            'customer_name' => $this->order->name ?: 'there',
+            'order_number' => $this->order->number,
+            'order_total' => Money::format($this->order->total_cents),
+            'refund_amount' => Money::format($this->amountCents),
+        ];
+    }
+
+    protected function templateBlocks(): array
+    {
+        return [
+            'full_refund_note' => $this->order->status === Order::REFUNDED
+                ? ['type' => 'text', 'text' => 'Because the order was refunded in full, its download links no longer work.']
+                : null,
+            'button' => ['type' => 'button', 'url' => $this->order->url(), 'label' => 'View your order'],
+        ];
     }
 }

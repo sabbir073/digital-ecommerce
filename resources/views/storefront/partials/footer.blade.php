@@ -5,6 +5,20 @@
             @if ($footerText)
                 <p class="mt-3 max-w-xs text-muted">{{ $footerText }}</p>
             @endif
+            @if ($storeContact)
+                <address class="mt-3 max-w-xs not-italic text-muted">
+                    @isset($storeContact['address'])<span class="block whitespace-pre-line">{{ $storeContact['address'] }}</span>@endisset
+                    @isset($storeContact['email'])<a href="mailto:{{ $storeContact['email'] }}" class="block hover:underline">{{ $storeContact['email'] }}</a>@endisset
+                    @isset($storeContact['phone'])<a href="tel:{{ preg_replace('/[^0-9+]/', '', $storeContact['phone']) }}" class="block hover:underline">{{ $storeContact['phone'] }}</a>@endisset
+                </address>
+            @endif
+            @if ($theme['socials'])
+                <ul class="mt-4 flex flex-wrap gap-x-4" aria-label="Social links">
+                    @foreach ($theme['socials'] as $social)
+                        <li><a href="{{ $social['url'] }}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center font-medium hover:underline">{{ $social['label'] }}</a></li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
 
         @foreach ($footerMenus as $menu)

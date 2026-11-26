@@ -102,6 +102,8 @@ class OrderController extends Controller
                 'number' => $order->number,
                 'email' => $order->email,
                 'name' => $order->name,
+                'phone' => $order->phone,
+                'customerNote' => $order->customer_note,
                 'status' => $order->status,
                 'statusLabel' => $order->statusLabel(),
                 'source' => $order->source,

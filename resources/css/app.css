@@ -273,6 +273,18 @@
         }
     }
 
+    /* Grid density from Theme settings; the standard is four in a row. */
+    @media (min-width: 1024px) {
+        .grid-spacious .product-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .grid-compact .product-grid {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 32px 20px;
+        }
+    }
+
     .product-card {
         display: block;
         border-radius: var(--radius-card);

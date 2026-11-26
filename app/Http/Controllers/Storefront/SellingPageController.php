@@ -13,6 +13,7 @@ use App\Services\Checkout\CouponService;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Selling\OfferPricing;
 use App\Services\Selling\PagePresenter;
+use App\Services\StoreSettings;
 use App\Support\Blocks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -125,13 +126,15 @@ class SellingPageController extends Controller
     public function start(Request $request, string $slug): JsonResponse
     {
         $page = $this->page($slug);
+        $settings = app(StoreSettings::class);
+        [$extraRules, $extraMessages] = $settings->checkoutRules();
         $data = $request->validate([
             'offer_id' => ['required', 'integer'],
             'email' => ['required', 'email:rfc', 'max:190'],
             'name' => ['required', 'string', 'max:120'],
             'country' => ['required', Rule::in(array_keys(config('countries')))],
             'postcode' => [Rule::requiredIf(fn () => in_array($request->input('country'), ['US', 'CA'], true)), 'nullable', 'string', 'max:20'],
-        ], [
+        ] + $extraRules, $extraMessages + [
             'email.required' => 'Enter your email so we can send your download links.',
             'email.email' => 'That email address does not look right.',
             'name.required' => 'Enter your name.',
@@ -161,6 +164,7 @@ class SellingPageController extends Controller
         }
 
         $order = $result['order'];
+        $order->forceFill($settings->checkoutExtras($data))->save();
 
         return response()->json([
             'client_secret' => $result['client_secret'],

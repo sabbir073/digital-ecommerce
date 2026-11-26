@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Services\Chat\ChatSettings;
 use App\Services\Checkout\CartService;
 use App\Services\Content\Navigation;
+use App\Services\StoreSettings;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -20,7 +21,7 @@ class StorefrontComposer
 
     private ?object $sharedFor = null;
 
-    public function __construct(private readonly Navigation $navigation) {}
+    public function __construct(private readonly Navigation $navigation, private readonly StoreSettings $settings) {}
 
     /**
      * The header menu built in admin. Until one is built, the top-level categories are the menu.
@@ -65,6 +66,13 @@ class StorefrontComposer
                 ->map(fn (string $location) => ['name' => $this->navigation->name($location), 'items' => $this->navigation->items($location)])
                 ->filter(fn (array $menu) => $menu['items'] !== [])->values(),
             'cartCount' => $this->cartCount(),
+            'theme' => $this->settings->storefrontTheme(),
+            'storeContact' => array_filter([
+                'email' => (string) Setting::get('store.contact_email', ''),
+                'phone' => (string) Setting::get('store.contact_phone', ''),
+                'address' => (string) Setting::get('store.address', ''),
+            ]),
+            'checkoutFields' => $this->settings->checkoutFields(),
             'chat' => $this->chat(),
         ];
     }

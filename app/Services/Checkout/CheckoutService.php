@@ -7,6 +7,7 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\StripeSettings;
+use App\Services\StoreSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -275,9 +276,11 @@ class CheckoutService
 
     private function newNumber(): string
     {
+        // No look-alike characters, so a number read over the phone is unambiguous.
+        $code = fn (int $length) => collect(range(1, $length))->map(fn () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[random_int(0, 31)])->implode('');
+        $store = app(StoreSettings::class)->store();
         do {
-            // No look-alike characters, so a number read over the phone is unambiguous.
-            $number = now()->format('ymd').'-'.collect(range(1, 6))->map(fn () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[random_int(0, 31)])->implode('');
+            $number = $store['number_prefix'].($store['number_style'] === 'code' ? $code(8) : now()->format('ymd').'-'.$code(6));
         } while (Order::query()->where('number', $number)->exists());
 
         return $number;

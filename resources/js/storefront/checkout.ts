@@ -1,3 +1,4 @@
+import { extraProblems, extras } from './checkout-extras';
 // Checkout: Stripe's embedded Payment Element (cards, Apple Pay, Google Pay, 3D Secure).
 // Card details go from the browser straight to Stripe. The amount is always set by the server.
 
@@ -113,6 +114,7 @@ async function init(): Promise<void> {
     // Optional account
     const toggle = form.querySelector<HTMLInputElement>('[data-account-toggle]');
     const accountFields = form.querySelector<HTMLElement>('[data-account-fields]');
+    const accountRequired = !!form.querySelector('[data-account-required]');
     toggle?.addEventListener('change', () => {
         if (accountFields) accountFields.hidden = !toggle.checked;
     });
@@ -184,9 +186,10 @@ async function init(): Promise<void> {
             name: (field('name')?.value ?? '').trim(),
             country: field('country')?.value ?? '',
             postcode: (field('postcode')?.value ?? '').trim(),
-            create_account: toggle?.checked ?? false,
+            create_account: accountRequired || (toggle?.checked ?? false),
             password: field('password')?.value ?? '',
             buy: config.buy,
+            ...extras(form),
         };
 
         const problems: Record<string, string[]> = {};
@@ -195,6 +198,7 @@ async function init(): Promise<void> {
         if (!values.country) problems.country = ['Choose your country.'];
         if (['US', 'CA', 'GB'].includes(values.country) && !values.postcode) problems.postcode = ['Enter your ZIP or postal code.'];
         if (values.create_account && values.password.length < 8) problems.password = ['Use at least 8 characters for your password.'];
+        Object.assign(problems, extraProblems(form));
         if (Object.keys(problems).length > 0) return showErrors(problems);
 
         setBusy(true);

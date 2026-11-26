@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Checkout\CartService;
 use App\Services\Checkout\CheckoutService;
 use App\Services\Payments\PaymentGateway;
+use App\Services\StoreSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -82,6 +83,13 @@ class CheckoutController extends Controller
     /** Create (or continue) the unpaid order and hand the browser what it needs to confirm the payment. */
     public function start(Request $request): JsonResponse
     {
+        $settings = app(StoreSettings::class);
+        [$extraRules, $extraMessages] = $settings->checkoutRules();
+        // With guest checkout switched off, a customer signs in or makes an account while paying.
+        $needsAccount = ! $settings->checkout()['guest_checkout'] && ! Auth::guard('web')->check();
+        if ($needsAccount) {
+            $request->merge(['create_account' => true]);
+        }
         $data = $request->validate([
             'email' => ['required', 'email:rfc', 'max:190'],
             'name' => ['required', 'string', 'max:120'],
@@ -89,7 +97,7 @@ class CheckoutController extends Controller
             'postcode' => [Rule::requiredIf(fn () => in_array($request->input('country'), ['US', 'CA'], true)), 'nullable', 'string', 'max:20'],
             'create_account' => ['boolean'],
             'password' => [Rule::requiredIf(fn () => $request->boolean('create_account') && ! Auth::guard('web')->check()), 'nullable', Password::min(8)],
-        ], [
+        ] + $extraRules, $extraMessages + [
             'email.required' => 'Enter your email so we can send your download links.',
             'email.email' => 'That email address does not look right.',
             'name.required' => 'Enter your name.',
@@ -130,6 +138,7 @@ class CheckoutController extends Controller
         }
 
         $order = $result['order'];
+        $order->forceFill($settings->checkoutExtras($data))->save();
 
         return response()->json([
             'client_secret' => $result['client_secret'],

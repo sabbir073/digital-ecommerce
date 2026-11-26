@@ -19,7 +19,10 @@ import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import WebOutlined from '@mui/icons-material/WebOutlined';
 import MenuOutlined from '@mui/icons-material/MenuOutlined';
 import PersonOutline from '@mui/icons-material/PersonOutlineOutlined';
+import MarkEmailReadOutlined from '@mui/icons-material/MarkEmailReadOutlined';
+import PaletteOutlined from '@mui/icons-material/PaletteOutlined';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
+import StorefrontOutlined from '@mui/icons-material/StorefrontOutlined';
 import PhotoLibraryOutlined from '@mui/icons-material/PhotoLibraryOutlined';
 import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import Alert from '@mui/material/Alert';
@@ -93,7 +96,12 @@ const NAV: { heading: string; items: NavItem[] }[] = [
     },
     {
         heading: 'Settings',
-        items: [{ label: 'Payments', href: '/admin/settings/payments', icon: <PaymentsOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/payments') }],
+        items: [
+            { label: 'Store', href: '/admin/settings/store', icon: <StorefrontOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/store') },
+            { label: 'Theme', href: '/admin/settings/theme', icon: <PaletteOutlined />, module: 'theme', match: (p) => p.startsWith('/admin/settings/theme') },
+            { label: 'Emails', href: '/admin/settings/emails', icon: <MarkEmailReadOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/emails') },
+            { label: 'Payments', href: '/admin/settings/payments', icon: <PaymentsOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/payments') },
+        ],
     },
     {
         heading: 'Team',

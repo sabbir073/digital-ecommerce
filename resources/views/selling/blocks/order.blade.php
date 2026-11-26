@@ -97,6 +97,8 @@
                         </div>
                     </div>
 
+                    @include('storefront.partials.checkout-extras', ['prefix' => 'sp'])
+
                     <p class="mt-6 font-semibold">3. Payment</p>
                     <p class="mt-1 text-label text-muted">Card details go straight to Stripe and never touch our servers.</p>
                     @unless ($ready)

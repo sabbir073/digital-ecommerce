@@ -34,6 +34,8 @@ interface Order {
     id: number;
     number: string;
     email: string;
+    phone: string | null;
+    customerNote: string | null;
     name: string | null;
     status: string;
     statusLabel: string;
@@ -238,6 +240,13 @@ export default function OrderShow({ order }: { order: Order }) {
                         <Typography variant="h4" component="h2" sx={{ mb: 2 }}>Customer</Typography>
                         <Typography sx={{ fontWeight: 600 }}>{order.name ?? 'No name given'}</Typography>
                         <Typography sx={{ wordBreak: 'break-all' }}>{order.email}</Typography>
+                        {order.phone && <Typography>{order.phone}</Typography>}
+                        {order.customerNote && (
+                            <Box sx={{ mt: 1.5 }}>
+                                <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>Note from the customer</Typography>
+                                <Typography sx={{ whiteSpace: 'pre-line' }}>{order.customerNote}</Typography>
+                            </Box>
+                        )}
                         {can('customers', 'view') && order.wasPaid && <Button component={RouterLink} href={`/admin/customers/view?email=${encodeURIComponent(order.email)}`} size="small" sx={{ mt: 1, ml: -0.5 }}>All orders of this customer</Button>}
                         <Typography sx={{ color: 'text.secondary', mt: 1 }}>{[order.country, order.postcode].filter(Boolean).join(' · ') || 'No country given'}</Typography>
                     </Card>
