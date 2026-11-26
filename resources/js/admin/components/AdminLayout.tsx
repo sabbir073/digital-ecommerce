@@ -5,11 +5,14 @@ import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
+import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import MenuOutlined from '@mui/icons-material/MenuOutlined';
 import PersonOutline from '@mui/icons-material/PersonOutlineOutlined';
+import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import PhotoLibraryOutlined from '@mui/icons-material/PhotoLibraryOutlined';
+import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import Alert from '@mui/material/Alert';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
@@ -59,6 +62,17 @@ const NAV: { heading: string; items: NavItem[] }[] = [
         ],
     },
     {
+        heading: 'Sales',
+        items: [
+            { label: 'Orders', href: '/admin/orders', icon: <ReceiptLongOutlined />, module: 'orders', match: (p) => p.startsWith('/admin/orders') },
+            { label: 'Coupons', href: '/admin/coupons', icon: <LocalOfferOutlined />, module: 'coupons', match: (p) => p.startsWith('/admin/coupons') },
+        ],
+    },
+    {
+        heading: 'Settings',
+        items: [{ label: 'Payments', href: '/admin/settings/payments', icon: <PaymentsOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/payments') }],
+    },
+    {
         heading: 'Team',
         items: [
             { label: 'Staff', href: '/admin/staff', icon: <GroupOutlined />, module: 'staff', match: (p) => p === '/admin/staff' },
@@ -71,7 +85,7 @@ const NAV: { heading: string; items: NavItem[] }[] = [
 
 export default function AdminLayout({ title, actions, children }: { title: string; actions?: ReactNode; children: ReactNode }) {
     const page = usePage<SharedProps>();
-    const { store, auth, flash } = page.props;
+    const { store, auth, flash, payments } = page.props;
     const path = page.url.split('?')[0];
     const can = useCan();
     const theme = useTheme();
@@ -178,6 +192,9 @@ export default function AdminLayout({ title, actions, children }: { title: strin
                 </AppBar>
 
                 <Box component="main" sx={{ flex: 1, p: { xs: 2, sm: 3, lg: 4 }, maxWidth: 1280, width: '100%', mx: 'auto' }}>
+                    {payments?.testMode && (
+                        <Alert severity="warning" sx={{ mb: 3 }}>Test mode: Stripe test keys are active, so no real money is taken.</Alert>
+                    )}
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 3 }}>
                         <Typography variant="h2" component="h1" sx={{ flex: 1, minWidth: 200 }}>
                             {title}

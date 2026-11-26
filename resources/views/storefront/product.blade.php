@@ -83,7 +83,7 @@
 
                 {{-- Buying starts with the cart (Phase 3); until its routes exist this is a plain picker with no dead buttons. --}}
                 @if ($canBuy)
-                    <form class="mt-7 space-y-6" action="{{ route('cart.add') }}" method="post" data-buy-form>
+                    <form class="mt-7 space-y-6" action="{{ route('cart.add') }}" method="post" data-buy-form data-cart-form data-cart-opens>
                     @csrf
                 @else
                     <div class="mt-7 space-y-6" data-buy-form>

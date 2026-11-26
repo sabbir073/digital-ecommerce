@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    // Fallback when no keys are saved in Admin > Settings > Payments.
+    'stripe' => [
+        'mode' => env('STRIPE_MODE', 'test'),
+        'test' => [
+            'publishable' => env('STRIPE_TEST_KEY'),
+            'secret' => env('STRIPE_TEST_SECRET'),
+            'webhook_secret' => env('STRIPE_TEST_WEBHOOK_SECRET'),
+        ],
+        'live' => [
+            'publishable' => env('STRIPE_LIVE_KEY'),
+            'secret' => env('STRIPE_LIVE_SECRET'),
+            'webhook_secret' => env('STRIPE_LIVE_WEBHOOK_SECRET'),
+        ],
+    ],
+
 ];

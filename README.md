@@ -5,7 +5,7 @@ Built with Laravel 13, React, Tailwind CSS, Material UI (admin) and MySQL.
 
 The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains **Phase 1: Foundation**.
 
-## What works today (Phases 1 and 2)
+## What works today (Phases 1 to 3)
 
 - Design tokens from PRD section 8, shared by the storefront (Tailwind) and the admin panel (Material UI theme).
 - Shared storefront header and footer, with the announcement bar and category navigation read from the database.
@@ -17,6 +17,11 @@ The product requirements and the approved build plan live in the project documen
 - Activity log: append-only, searchable, filterable by person and area.
 - Catalog admin: products with up to two options and per-variant price, SKU, stock and image; digital files on a private disk; two-level categories with drag reorder; media library with folders and automatic WebP resizing; CSV import and export.
 - Storefront: home page built from reorderable sections, all-products, category and search pages with filters, sort and pagination, and the product page with gallery, variant pickers and quantity stepper.
+
+- Cart and checkout: cart drawer and cart page, coupons, guest checkout with optional account, Stripe's embedded Payment Element (cards, Apple Pay, Google Pay, 3D Secure), tax from Stripe Tax, stock held while a payment is in progress.
+- Orders: an order becomes Paid only when Stripe's signed webhook arrives. Then stock is reduced, download links are created (limited by count and days) and the confirmation email is sent. Refund and dispute events from Stripe update the order.
+- Customer accounts: sign up, sign in, password reset, order history with downloads.
+- Admin: orders list and detail, coupons, and Settings > Payments (Stripe keys for Super Admins only, stored encrypted; Stripe Tax and overselling switches).
 
 ## Local setup
 
@@ -36,6 +41,19 @@ php artisan serve
 ```
 
 Open `http://localhost:8000` for the storefront and `http://localhost:8000/admin` for the admin panel.
+
+## Payments (Stripe)
+
+1. In the Stripe dashboard (test mode) copy the publishable and secret keys into Admin > Settings > Payments. They can also be set in `.env` (`STRIPE_TEST_KEY`, `STRIPE_TEST_SECRET`, `STRIPE_TEST_WEBHOOK_SECRET`).
+2. Orders are marked Paid by the webhook, so Stripe must be able to reach `/stripe/webhook`. On a local machine use the Stripe CLI and paste the `whsec_...` value it prints into the webhook secret field:
+   ```sh
+   stripe listen --forward-to http://localhost:8000/stripe/webhook
+   ```
+   On a live site add an endpoint in Stripe for `https://your-domain/stripe/webhook` with the events `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`, `refund.created`, `refund.updated`, `charge.dispute.created`, `charge.dispute.updated` and `charge.dispute.closed`.
+3. Tax uses Stripe Tax. Switch it on in your Stripe account and add your tax registrations there, or switch it off in Admin > Settings > Payments.
+4. Emails and expiry of unpaid orders run from the scheduler and queue. Locally run `php artisan schedule:work` (it also drains the queue), or set `QUEUE_CONNECTION=sync` to send emails straight away.
+
+Test card: `4242 4242 4242 4242` succeeds, `4000 0000 0000 0002` is declined, `4000 0027 6000 3184` asks for 3D Secure.
 
 ## Tests
 

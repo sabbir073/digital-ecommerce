@@ -46,7 +46,15 @@ so no always-on worker process is needed:
 * * * * * cd ~/digital-ecommerce && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-## 5. Updating
+## 5. Stripe
+
+Save the Stripe keys in Admin > Settings > Payments (Super Admin only). In Stripe, add a webhook endpoint for
+`https://your-domain/stripe/webhook` and paste its signing secret into the same screen. Orders are only marked
+Paid by that webhook, and the cron job above sends the confirmation emails and releases stock held by unpaid
+orders. The list of events to select is in the README under "Payments (Stripe)". Stay in test mode until a test
+purchase works end to end.
+
+## 6. Updating
 
 Upload the new `release.zip`, extract it over the old files (keep `.env` and `storage/`), then run:
 

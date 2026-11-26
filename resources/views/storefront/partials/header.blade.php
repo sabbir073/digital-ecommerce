@@ -37,9 +37,9 @@
             @endif
 
             @if (Route::has('cart'))
-                <a href="{{ route('cart') }}" class="icon-btn relative" aria-label="Cart">
+                <a href="{{ route('cart') }}" class="icon-btn relative" aria-label="Cart" data-cart-open>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11H6.2L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
-                    <span data-cart-count class="absolute right-0.5 top-0.5 hidden h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-semibold text-white"></span>
+                    <span data-cart-count class="cart-count" @if ($cartCount === 0) hidden @endif>{{ $cartCount }}</span>
                 </a>
             @endif
 

@@ -28,6 +28,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.auth' => AuthenticateAdmin::class,
             'permission' => RequirePermission::class,
         ]);
+        // Stripe's webhook is verified by its signature instead of a CSRF token.
+        $middleware->validateCsrfTokens(except: ['stripe/webhook']);
+        $middleware->redirectUsersTo(fn (Request $request) => $request->is('admin', 'admin/*') ? '/admin' : '/account');
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('admin', 'admin/*') ? '/admin/login' : '/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {

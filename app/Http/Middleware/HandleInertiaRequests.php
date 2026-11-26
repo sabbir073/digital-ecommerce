@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Setting;
+use App\Services\Payments\StripeSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
@@ -31,6 +32,8 @@ class HandleInertiaRequests extends Middleware
                 // checked again on the server by the `permission` middleware.
                 'permissions' => $user && $user->role ? $user->role->permissionMap() : (object) [],
             ],
+            // Drives the "Test mode" banner shown on every admin page (PRD section 6).
+            'payments' => fn () => $user ? ['testMode' => app(StripeSettings::class)->isConfigured() && app(StripeSettings::class)->mode() === 'test'] : null,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
