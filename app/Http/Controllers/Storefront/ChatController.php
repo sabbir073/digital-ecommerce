@@ -38,8 +38,8 @@ class ChatController extends Controller
             'message' => ['required', 'string', 'max:2000'],
             'page_url' => ['nullable', 'string', 'max:500'],
         ], [
-            'email.required' => 'Enter your email so we can reply.',
-            'message.required' => 'Write your message.',
+            'email.required' => t('Enter your email so we can reply.'),
+            'message.required' => t('Write your message.'),
         ]);
 
         // A filled hidden field means a bot: answer as if it worked and keep nothing.

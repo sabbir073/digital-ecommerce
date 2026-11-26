@@ -3,9 +3,9 @@
 A CMS-driven store for digital products, with a normal catalog checkout and one-page selling pages.
 Built with Laravel 13, React, Tailwind CSS, Material UI (admin) and MySQL.
 
-The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains Phases 1 to 7.
+The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains Phases 1 to 8.
 
-## What works today (Phases 1 to 7)
+## What works today (Phases 1 to 8)
 
 - Design tokens from PRD section 8, shared by the storefront (Tailwind) and the admin panel (Material UI theme).
 - Shared storefront header and footer, with the announcement bar and category navigation read from the database.
@@ -34,6 +34,13 @@ The product requirements and the approved build plan live in the project documen
 - Admin > Reviews > Settings: who may review, auto-approval of verified buyers, holding reviews with links or blocked words, the request email and its delay, flags on or off, the home page section, and an optional Cloudflare Turnstile captcha.
 - Live chat: a chat button on the store (and on selling pages if switched on) where visitors write to the team. It needs no outside service: the widget and the inbox ask the server for new messages every 3 seconds, so it works on ordinary cPanel hosting. The chat belongs to the visitor's browser through a secret cookie, of which only a hash is stored.
 - Admin > Live chat: inbox with open and closed conversations, unread counts, replying, take over, close, reopen and delete. Visitors see the team as online while someone has the inbox open. When nobody is there, the visitor is asked for an email and the store's notification address gets an email; a reply written after the visitor has left is also sent to their email.
+- Admin > Orders: search and filters, CSV export, full and partial refunds through Stripe (a full refund switches off the download links), resending the confirmation email, renewing download links, cancelling an unpaid order and staff notes.
+- Admin > Customers: everyone who has bought or made an account, with their orders and total spent, and a CSV export. The dashboard shows sales today and this month, the latest orders, low stock and the best selling pages.
+- Admin > Content: the home page (reorder sections, switch them off, edit their text, images, links and products), content pages built with the block editor at `/pages/<slug>`, a blog at `/blog` with categories, tags, drafts and scheduled posts, the header menu, three footer menus and the announcement bar, and an inbox for contact form messages.
+- Admin > Settings > Store: store and contact details, how prices are written, the order number format, checkout fields (guest checkout, phone, order note, terms checkbox), stock rules, maintenance mode with your own message (signed-in staff still see the store) and CSV downloads of orders, customers, products and reviews.
+- Admin > Settings > Theme: logo, favicon, accent colour from a tested set or a custom colour that must pass a 4.5 to 1 contrast check, heading and body font from a self-hosted list, product grid density, what shows on product cards and social links.
+- Admin > Settings > Emails: the subject and text of every customer email (order confirmation, refund, review request, chat reply, password reset) with a live preview. Values are escaped and the text is never run as code.
+- Admin > Settings > Interface text: every button label, message and empty state of the storefront can be reworded. Text in views, controllers and scripts goes through `t('...')`; after adding or changing one, run `php artisan ui:scan` to rebuild `resources/ui-strings.php` (a test fails when the list is out of date).
 
 ## Local setup
 

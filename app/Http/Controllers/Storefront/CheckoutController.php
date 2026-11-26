@@ -98,26 +98,26 @@ class CheckoutController extends Controller
             'create_account' => ['boolean'],
             'password' => [Rule::requiredIf(fn () => $request->boolean('create_account') && ! Auth::guard('web')->check()), 'nullable', Password::min(8)],
         ] + $extraRules, $extraMessages + [
-            'email.required' => 'Enter your email so we can send your download links.',
-            'email.email' => 'That email address does not look right.',
-            'name.required' => 'Enter your name.',
-            'country.required' => 'Choose your country.',
-            'postcode.required' => 'Enter your ZIP or postal code.',
-            'password.required' => 'Choose a password for your account.',
-            'password.min' => 'Use at least 8 characters for your password.',
+            'email.required' => t('Enter your email so we can send your download links.'),
+            'email.email' => t('That email address does not look right.'),
+            'name.required' => t('Enter your name.'),
+            'country.required' => t('Choose your country.'),
+            'postcode.required' => t('Enter your ZIP or postal code.'),
+            'password.required' => t('Choose a password for your account.'),
+            'password.min' => t('Use at least 8 characters for your password.'),
         ]);
 
         $data['email'] = Str::lower($data['email']);
 
         $cart = $this->cart($request->boolean('buy'));
         if (! $cart) {
-            return response()->json(['errors' => ['checkout' => ['Your cart is empty.']]], 422);
+            return response()->json(['errors' => ['checkout' => [t('Your cart is empty.')]]], 422);
         }
 
         $user = Auth::guard('web')->user();
         if (! $user && $request->boolean('create_account')) {
             if (User::query()->where('email', $data['email'])->exists()) {
-                return response()->json(['errors' => ['email' => ['An account with this email already exists. Sign in, or untick "Create an account".']]], 422);
+                return response()->json(['errors' => ['email' => [t('An account with this email already exists. Sign in, or untick "Create an account".')]]], 422);
             }
             $user = User::create(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password']]);
             Auth::login($user);

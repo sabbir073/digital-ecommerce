@@ -2,7 +2,7 @@
 @if ($images->count() >= 2)
     @include('selling.blocks._open')
         <div class="container-selling">
-            <ul class="{{ $d['layout'] === 'slider' ? 'sp-slider' : 'sp-gallery' }}" @if ($d['layout'] === 'slider') tabindex="0" aria-label="Photo gallery, scroll sideways" @endif>
+            <ul class="{{ $d['layout'] === 'slider' ? 'sp-slider' : 'sp-gallery' }}" @if ($d['layout'] === 'slider') tabindex="0" aria-label="{{ t('Photo gallery, scroll sideways') }}" @endif>
                 @foreach ($images as $image)
                     <li>
                         <img src="{{ $image->sizeUrl(640) }}" srcset="{{ $image->srcset() }}" sizes="(min-width: 1024px) 350px, (min-width: 640px) 50vw, 80vw" alt="{{ $image->alt ?: '' }}"

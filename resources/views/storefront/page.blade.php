@@ -10,7 +10,7 @@
 
 @section('content')
     @if ($preview)
-        <p class="bg-ink px-6 py-2 text-center text-label font-medium text-white" role="status">Preview of the draft. Visitors do not see this version until you publish.</p>
+        <p class="bg-ink px-6 py-2 text-center text-label font-medium text-white" role="status">{{ t('Preview of the draft. Visitors do not see this version until you publish.') }}</p>
     @endif
 
     {{-- A page that does not open with a hero still needs its one main heading. --}}

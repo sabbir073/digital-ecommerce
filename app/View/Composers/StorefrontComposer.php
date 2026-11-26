@@ -9,6 +9,7 @@ use App\Services\Chat\ChatSettings;
 use App\Services\Checkout\CartService;
 use App\Services\Content\Navigation;
 use App\Services\StoreSettings;
+use App\Services\UiText;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -67,6 +68,8 @@ class StorefrontComposer
                 ->filter(fn (array $menu) => $menu['items'] !== [])->values(),
             'cartCount' => $this->cartCount(),
             'theme' => $this->settings->storefrontTheme(),
+            'currencyFormat' => StoreSettings::currencyFormat(),
+            'uiText' => UiText::forScripts(),
             'storeContact' => array_filter([
                 'email' => (string) Setting::get('store.contact_email', ''),
                 'phone' => (string) Setting::get('store.contact_phone', ''),

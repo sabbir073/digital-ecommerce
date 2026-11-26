@@ -23,6 +23,7 @@ import MarkEmailReadOutlined from '@mui/icons-material/MarkEmailReadOutlined';
 import PaletteOutlined from '@mui/icons-material/PaletteOutlined';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import StorefrontOutlined from '@mui/icons-material/StorefrontOutlined';
+import TranslateOutlined from '@mui/icons-material/TranslateOutlined';
 import PhotoLibraryOutlined from '@mui/icons-material/PhotoLibraryOutlined';
 import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import Alert from '@mui/material/Alert';
@@ -100,6 +101,7 @@ const NAV: { heading: string; items: NavItem[] }[] = [
             { label: 'Store', href: '/admin/settings/store', icon: <StorefrontOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/store') },
             { label: 'Theme', href: '/admin/settings/theme', icon: <PaletteOutlined />, module: 'theme', match: (p) => p.startsWith('/admin/settings/theme') },
             { label: 'Emails', href: '/admin/settings/emails', icon: <MarkEmailReadOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/emails') },
+            { label: 'Interface text', href: '/admin/settings/text', icon: <TranslateOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/text') },
             { label: 'Payments', href: '/admin/settings/payments', icon: <PaymentsOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/payments') },
         ],
     },

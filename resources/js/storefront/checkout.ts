@@ -1,3 +1,4 @@
+import { money, t } from './shared';
 import { extraProblems, extras } from './checkout-extras';
 // Checkout: Stripe's embedded Payment Element (cards, Apple Pay, Google Pay, 3D Secure).
 // Card details go from the browser straight to Stripe. The amount is always set by the server.
@@ -27,7 +28,6 @@ declare global {
     }
 }
 
-const money = (cents: number): string => (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
 const csrf = (): string => document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
 
@@ -97,7 +97,7 @@ async function init(): Promise<void> {
     const setTotal = (cents: number, tax: number | null) => {
         total = cents;
         if (totalEl) totalEl.textContent = money(cents);
-        if (payLabel) payLabel.textContent = cents > 0 ? `Pay ${money(cents)}` : 'Place order';
+        if (payLabel) payLabel.textContent = cents > 0 ? `Pay ${money(cents)}` : t('Place order');
         if (taxEl && tax !== null) taxEl.textContent = money(tax);
         if (cents > 0) elements?.update({ amount: cents });
         if (mount) mount.hidden = cents === 0;
@@ -172,7 +172,7 @@ async function init(): Promise<void> {
                 })
                 .mount(mount);
         } catch {
-            setError('checkout', 'The payment form could not be loaded. Check your connection and reload the page.');
+            setError('checkout', t('The payment form could not be loaded. Check your connection and reload the page.'));
         }
     }
 
@@ -193,20 +193,20 @@ async function init(): Promise<void> {
         };
 
         const problems: Record<string, string[]> = {};
-        if (!/^\S+@\S+\.\S+$/.test(values.email)) problems.email = ['Enter a valid email so we can send your download links.'];
-        if (!values.name) problems.name = ['Enter your name.'];
-        if (!values.country) problems.country = ['Choose your country.'];
-        if (['US', 'CA', 'GB'].includes(values.country) && !values.postcode) problems.postcode = ['Enter your ZIP or postal code.'];
-        if (values.create_account && values.password.length < 8) problems.password = ['Use at least 8 characters for your password.'];
+        if (!/^\S+@\S+\.\S+$/.test(values.email)) problems.email = [t('Enter a valid email so we can send your download links.')];
+        if (!values.name) problems.name = [t('Enter your name.')];
+        if (!values.country) problems.country = [t('Choose your country.')];
+        if (['US', 'CA', 'GB'].includes(values.country) && !values.postcode) problems.postcode = [t('Enter your ZIP or postal code.')];
+        if (values.create_account && values.password.length < 8) problems.password = [t('Use at least 8 characters for your password.')];
         Object.assign(problems, extraProblems(form));
         if (Object.keys(problems).length > 0) return showErrors(problems);
 
         setBusy(true);
         try {
             if (total > 0) {
-                if (!stripe || !elements) throw new Error('The payment form is not ready. Reload the page and try again.');
+                if (!stripe || !elements) throw new Error(t('The payment form is not ready. Reload the page and try again.'));
                 const submitted = await elements.submit();
-                if (submitted.error) throw new Error(submitted.error.message ?? 'Check your payment details.');
+                if (submitted.error) throw new Error(submitted.error.message ?? t('Check your payment details.'));
             }
 
             const started = await post<{ client_secret?: string | null; paid?: boolean; total?: number; tax?: number; order_url?: string; errors?: Record<string, string[]>; message?: string }>(
@@ -214,13 +214,13 @@ async function init(): Promise<void> {
                 values,
             );
             if (!started.ok) {
-                if (started.status === 429) throw new Error('Too many attempts. Wait a minute and try again.');
-                if (started.status === 419) throw new Error('This page expired. Reload it and try again.');
+                if (started.status === 429) throw new Error(t('Too many attempts. Wait a minute and try again.'));
+                if (started.status === 419) throw new Error(t('This page expired. Reload it and try again.'));
                 if (started.data.errors) {
                     showErrors(started.data.errors);
                     return;
                 }
-                throw new Error(started.data.message ?? 'Something went wrong. Please try again.');
+                throw new Error(started.data.message ?? t('Something went wrong. Please try again.'));
             }
 
             const orderUrl = started.data.order_url as string;
@@ -247,10 +247,10 @@ async function init(): Promise<void> {
                 },
             });
             // Reaching this line means the customer was not redirected: the payment was declined or needs fixing.
-            if (confirmed.error) throw new Error(confirmed.error.message ?? 'The payment did not go through. Try another card.');
+            if (confirmed.error) throw new Error(confirmed.error.message ?? t('The payment did not go through. Try another card.'));
             window.location.assign(orderUrl);
         } catch (error) {
-            setError('checkout', error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+            setError('checkout', error instanceof Error ? error.message : t('Something went wrong. Please try again.'));
             form.querySelector<HTMLElement>('[data-error="checkout"]')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         } finally {
             setBusy(false);

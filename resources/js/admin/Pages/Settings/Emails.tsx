@@ -94,7 +94,7 @@ export default function EmailTemplates({ templates }: { templates: Template[] })
     const chips = (items: Record<string, string>, color: 'default' | 'primary') => Object.entries(items).map(([name, text]) => (
         <Box key={name} sx={{ display: 'flex', gap: 1.5, alignItems: 'baseline' }}>
             <Chip label={`{{${name}}}`} size="small" color={color} variant="outlined" disabled={locked} onClick={() => insert(name)} sx={{ fontFamily: 'monospace', flexShrink: 0 }} />
-            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{text}{template.required.includes(name) ? ' Must stay in the email.' : ''}</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{text}{template.required.includes(name) ? '. Must stay in the email.' : ''}</Typography>
         </Box>
     ));
 

@@ -13,9 +13,9 @@
         @endif
         @if ($theme['cards']['badges'])
             @if ($soldOut)
-                <span class="badge absolute left-3 top-3 bg-surface text-ink">Sold out</span>
+                <span class="badge absolute left-3 top-3 bg-surface text-ink">{{ t('Sold out') }}</span>
             @elseif ($product->isOnSale())
-                <span class="badge absolute left-3 top-3">Sale</span>
+                <span class="badge absolute left-3 top-3">{{ t('Sale') }}</span>
             @endif
         @endif
     </div>
@@ -28,7 +28,7 @@
             @include('storefront.partials.rating', ['average' => $product->rating_average, 'count' => $product->rating_count])
         @endif
         <p class="mt-1.5 flex flex-wrap items-baseline gap-x-2">
-            <span class="font-semibold">@if ($varies)<span class="font-normal text-muted">From</span> @endif{{ \App\Support\Money::format($from) }}</span>
+            <span class="font-semibold">@if ($varies)<span class="font-normal text-muted">{{ t('From') }}</span> @endif{{ \App\Support\Money::format($from) }}</span>
             @if ($product->isOnSale() && $theme['cards']['compare'])
                 <s class="text-label text-muted">{{ \App\Support\Money::format($product->compare_at_cents) }}</s>
             @endif

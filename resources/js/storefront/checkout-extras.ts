@@ -1,3 +1,4 @@
+import { t } from './shared';
 // The optional checkout fields (phone, order note, terms) shared by the store checkout and the selling page.
 // A field that is switched off in admin is simply not in the form.
 const el = <T extends HTMLElement>(form: HTMLElement, name: string) => form.querySelector<T>(`[name="${name}"]`);
@@ -17,7 +18,7 @@ export function extraProblems(form: HTMLElement): Record<string, string[]> {
     const problems: Record<string, string[]> = {};
     const phone = el<HTMLInputElement>(form, 'phone');
     const terms = el<HTMLInputElement>(form, 'terms');
-    if (phone?.required && !phone.value.trim()) problems.phone = ['Enter your phone number.'];
-    if (terms && !terms.checked) problems.terms = ['Tick the box to accept the terms.'];
+    if (phone?.required && !phone.value.trim()) problems.phone = [t('Enter your phone number.')];
+    if (terms && !terms.checked) problems.terms = [t('Tick the box to accept the terms.')];
     return problems;
 }

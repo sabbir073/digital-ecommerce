@@ -22,8 +22,8 @@
 
 @section('content')
     <div class="container-store mt-8 lg:mt-10" data-product>
-        <nav aria-label="Breadcrumb" class="breadcrumb">
-            <a href="{{ route('home') }}">Home</a>
+        <nav aria-label="{{ t('Breadcrumb') }}" class="breadcrumb">
+            <a href="{{ route('home') }}">{{ t('Home') }}</a>
             @if ($product->category?->parent)
                 <span aria-hidden="true">/</span><a href="{{ route('category', $product->category->parent->slug) }}">{{ $product->category->parent->name }}</a>
             @endif
@@ -49,7 +49,7 @@
                 </div>
 
                 @if ($gallery->count() > 1)
-                    <div class="gallery-thumbs" role="group" aria-label="Choose an image">
+                    <div class="gallery-thumbs" role="group" aria-label="{{ t('Choose an image') }}">
                         @foreach ($gallery as $index => $image)
                             <button type="button" class="gallery-thumb" data-gallery-thumb="{{ $index }}" aria-label="Show image {{ $index + 1 }}" @if ($index === 0) aria-current="true" @endif>
                                 <img src="{{ $image->sizeUrl(320) }}" alt="" width="160" height="160" loading="lazy" decoding="async">
@@ -70,13 +70,13 @@
                         @include('storefront.partials.rating', ['average' => $product->rating_average, 'count' => $product->rating_count])
                     </a>
                 @else
-                    <a href="#write-review" class="mt-3 inline-flex min-h-11 items-center text-label text-muted hover:text-ink hover:underline">Write the first review</a>
+                    <a href="#write-review" class="mt-3 inline-flex min-h-11 items-center text-label text-muted hover:text-ink hover:underline">{{ t('Write the first review') }}</a>
                 @endif
 
                 <p class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
                     <span class="font-heading text-[28px] font-semibold tracking-tight" data-price>{{ Money::format($price) }}</span>
                     <s class="text-[17px] text-muted" data-compare @if (! $onSale) hidden @endif>{{ $onSale ? Money::format($compare) : '' }}</s>
-                    <span class="badge" data-save @if (! $onSale) hidden @endif>{{ $onSale ? 'Save '.Money::format($compare - $price) : '' }}</span>
+                    <span class="badge" data-save @if (! $onSale) hidden @endif>{{ $onSale ? t('Save :amount', ['amount' => Money::format($compare - $price)]) : '' }}</span>
                 </p>
 
                 @if ($product->short_description)
@@ -118,16 +118,16 @@
 
                     <div class="flex flex-wrap items-end gap-x-6 gap-y-4">
                         <div>
-                            <label for="qty" class="field-label">Quantity</label>
+                            <label for="qty" class="field-label">{{ t('Quantity') }}</label>
                             <div class="qty">
-                                <button type="button" class="qty-btn" data-qty-minus aria-label="Decrease quantity">@include('storefront.partials.icon', ['name' => 'minus', 'size' => 18])</button>
+                                <button type="button" class="qty-btn" data-qty-minus aria-label="{{ t('Decrease quantity') }}">@include('storefront.partials.icon', ['name' => 'minus', 'size' => 18])</button>
                                 <input id="qty" name="quantity" type="number" inputmode="numeric" min="1" @if ($stock !== null) max="{{ max(1, $stock) }}" @endif value="1" data-qty @disabled($soldOut)>
-                                <button type="button" class="qty-btn" data-qty-plus aria-label="Increase quantity">@include('storefront.partials.icon', ['name' => 'plus', 'size' => 18])</button>
+                                <button type="button" class="qty-btn" data-qty-plus aria-label="{{ t('Increase quantity') }}">@include('storefront.partials.icon', ['name' => 'plus', 'size' => 18])</button>
                             </div>
                         </div>
                         <p class="min-h-12 content-center text-label" data-stock-note aria-live="polite">
                             @if ($soldOut)
-                                <span class="font-semibold text-ink">Out of stock</span>
+                                <span class="font-semibold text-ink">{{ t('Out of stock') }}</span>
                             @elseif ($stock !== null && $stock <= 5)
                                 <span class="font-semibold text-ink">Only {{ $stock }} left</span>
                             @else
@@ -137,23 +137,23 @@
                     </div>
 
                     <div class="flex items-baseline justify-between border-t border-line pt-5">
-                        <span class="text-muted">Total</span>
+                        <span class="text-muted">{{ t('Total') }}</span>
                         <span class="font-heading text-[22px] font-semibold" data-total>{{ Money::format($price) }}</span>
                     </div>
 
                     @if ($canBuy)
                         <div class="grid gap-3 sm:grid-cols-2">
                             <button type="submit" name="intent" value="cart" class="btn btn-primary" data-buy-button @disabled($soldOut)>
-                                <span data-add-label>Add to cart · {{ Money::format($price) }}</span>
+                                <span data-add-label>{{ t('Add to cart') }} · {{ Money::format($price) }}</span>
                             </button>
-                            <button type="submit" name="intent" value="buy" class="btn btn-accent" data-buy-button @disabled($soldOut)>Buy now</button>
+                            <button type="submit" name="intent" value="buy" class="btn btn-accent" data-buy-button @disabled($soldOut)>{{ t('Buy now') }}</button>
                         </div>
                     @endif
                 @if ($canBuy) </form> @else </div> @endif
 
                 @if ($sellingPage)
                     <a href="{{ $sellingPage->url() }}" class="mt-5 inline-flex min-h-11 items-center gap-2 font-medium text-accent hover:underline">
-                        See the full story and special packs
+                        {{ t('See the full story and special packs') }}
                         @include('storefront.partials.icon', ['name' => 'arrow', 'size' => 18])
                     </a>
                 @endif
@@ -181,11 +181,11 @@
             </div>
         </div>
 
-        @include('storefront.partials.reviews', ['heading' => 'Customer reviews'])
+        @include('storefront.partials.reviews', ['heading' => t('Customer reviews')])
 
         @if ($related->isNotEmpty())
             <section class="section-gap" aria-labelledby="related-heading">
-                <h2 id="related-heading" class="section-heading">You may also like</h2>
+                <h2 id="related-heading" class="section-heading">{{ t('You may also like') }}</h2>
                 <div class="product-grid mt-7">
                     @foreach ($related as $item)
                         @include('storefront.partials.product-card', ['product' => $item])

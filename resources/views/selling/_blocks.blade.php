@@ -11,7 +11,7 @@
             @if ($empty)
                 <div class="bd-empty">
                     <strong>{{ $label }}</strong>
-                    <span>This block has no content yet. Select it and fill it in on the right. Customers do not see empty blocks.</span>
+                    <span>{{ t('This block has no content yet. Select it and fill it in on the right. Customers do not see empty blocks.') }}</span>
                 </div>
             @else
                 {!! $html !!}
@@ -22,5 +22,5 @@
     @endif
 @endforeach
 @if ($builder && count($blocks) === 0)
-    <div class="bd-blank">Drag a block here from the list on the left to start the page.</div>
+    <div class="bd-blank">{{ t('Drag a block here from the list on the left to start the page.') }}</div>
 @endif

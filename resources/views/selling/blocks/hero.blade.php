@@ -32,7 +32,7 @@
                 </p>
             @endif
             @if ($hasOrder)
-                <a href="#order" class="btn btn-accent btn-pay px-9 text-[17px]" data-order-link @edit('button_label')>{{ $d['button_label'] ?: 'Order now' }}</a>
+                <a href="#order" class="btn btn-accent btn-pay px-9 text-[17px]" data-order-link @edit('button_label')>{{ $d['button_label'] ?: t('Order now') }}</a>
             @elseif (! $product && $d['button_label'] && ($d['button_url'] ?? ''))
                 <a href="{{ $d['button_url'] }}" class="btn btn-accent px-9 text-[17px]" @edit('button_label')>{{ $d['button_label'] }}</a>
             @endif

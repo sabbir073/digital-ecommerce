@@ -71,11 +71,11 @@ class CartService
     public function add(Cart $cart, Product $product, ?Variant $variant, int $quantity): CartItem
     {
         if ($product->status !== 'active') {
-            throw new CheckoutException('This product is not available.', 'stock');
+            throw new CheckoutException(t('This product is not available.'), 'stock');
         }
         $product->loadMissing('variants');
         if ($product->hasVariants() && (! $variant || $variant->product_id !== $product->id)) {
-            throw new CheckoutException('Choose an option first.', 'variant');
+            throw new CheckoutException(t('Choose an option first.'), 'variant');
         }
         if (! $product->hasVariants()) {
             $variant = null;
@@ -87,7 +87,7 @@ class CartService
         $available = $this->stock->available($product, $variant);
         if ($available !== null) {
             if ($available === 0) {
-                throw new CheckoutException('This item is out of stock.', 'stock');
+                throw new CheckoutException(t('This item is out of stock.'), 'stock');
             }
             $wanted = min($wanted, $available);
         }

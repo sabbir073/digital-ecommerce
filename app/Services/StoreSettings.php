@@ -146,9 +146,9 @@ class StoreSettings
         }
 
         return [$rules, [
-            'phone.required' => 'Enter your phone number.',
-            'phone.regex' => 'That phone number does not look right.',
-            'terms.accepted' => 'Tick the box to accept the terms.',
+            'phone.required' => t('Enter your phone number.'),
+            'phone.regex' => t('That phone number does not look right.'),
+            'terms.accepted' => t('Tick the box to accept the terms.'),
         ]];
     }
 

@@ -13,7 +13,7 @@
                 </address>
             @endif
             @if ($theme['socials'])
-                <ul class="mt-4 flex flex-wrap gap-x-4" aria-label="Social links">
+                <ul class="mt-4 flex flex-wrap gap-x-4" aria-label="{{ t('Social links') }}">
                     @foreach ($theme['socials'] as $social)
                         <li><a href="{{ $social['url'] }}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center font-medium hover:underline">{{ $social['label'] }}</a></li>
                     @endforeach
@@ -33,6 +33,6 @@
         @endforeach
     </div>
     <div class="border-t border-line">
-        <div class="container-store py-5 text-label text-muted">&copy; {{ date('Y') }} {{ $storeName }}. All rights reserved.</div>
+        <div class="container-store py-5 text-label text-muted">&copy; {{ date('Y') }} {{ $storeName }}. {{ t('All rights reserved.') }}</div>
     </div>
 </footer>

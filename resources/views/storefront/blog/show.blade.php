@@ -13,13 +13,13 @@
 
 @section('content')
     @if ($preview)
-        <p class="bg-ink px-6 py-2 text-center text-label font-medium text-white" role="status">Preview. Visitors cannot see this post {{ $post->status === 'published' ? 'until its publish date' : 'until you publish it' }}.</p>
+        <p class="bg-ink px-6 py-2 text-center text-label font-medium text-white" role="status">{{ $post->status === 'published' ? t('Preview. Visitors cannot see this post until its publish date.') : t('Preview. Visitors cannot see this post until you publish it.') }}</p>
     @endif
 
     <article class="container-store py-10 lg:py-14">
         <div class="mx-auto max-w-[760px]">
-            <nav aria-label="Breadcrumb" class="text-label text-muted">
-                <a href="{{ route('blog.index') }}" class="hover:underline">Blog</a>
+            <nav aria-label="{{ t('Breadcrumb') }}" class="text-label text-muted">
+                <a href="{{ route('blog.index') }}" class="hover:underline">{{ t('Blog') }}</a>
                 @if ($post->category)
                     <span aria-hidden="true"> / </span><a href="{{ route('blog.category', $post->category->slug) }}" class="hover:underline">{{ $post->category->name }}</a>
                 @endif
@@ -28,7 +28,7 @@
             <p class="mt-4 text-muted">
                 @if ($post->author) By {{ $post->author->name }} · @endif
                 @if ($post->published_at) <time datetime="{{ $post->published_at->toDateString() }}">{{ $post->published_at->format('F j, Y') }}</time> · @endif
-                {{ $post->readingMinutes() }} min read
+                {{ t(':minutes min read', ['minutes' => $post->readingMinutes()]) }}
             </p>
         </div>
 
@@ -42,7 +42,7 @@
             <div class="prose-store">{!! App\Support\HtmlSanitizer::clean($post->body) !!}</div>
 
             @if (! empty($post->tags))
-                <ul class="mt-10 flex flex-wrap gap-2" aria-label="Tags">
+                <ul class="mt-10 flex flex-wrap gap-2" aria-label="{{ t('Tags') }}">
                     @foreach ($post->tags as $tag)
                         <li><a href="{{ route('blog.index', ['tag' => $tag]) }}" class="chip">{{ $tag }}</a></li>
                     @endforeach
@@ -53,7 +53,7 @@
 
     @if ($more->isNotEmpty())
         <section class="container-store pb-6" aria-labelledby="more-posts">
-            <h2 id="more-posts" class="section-heading">More from the blog</h2>
+            <h2 id="more-posts" class="section-heading">{{ t('More from the blog') }}</h2>
             <div class="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($more as $other)
                     @include('storefront.blog._card', ['post' => $other])

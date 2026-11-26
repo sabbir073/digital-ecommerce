@@ -1,9 +1,9 @@
 @if ($paginator->hasPages())
-    <nav aria-label="Pages" class="mt-12 flex items-center justify-center gap-1.5">
+    <nav aria-label="{{ t('Pages') }}" class="mt-12 flex items-center justify-center gap-1.5">
         @if ($paginator->onFirstPage())
-            <span class="page-btn" aria-disabled="true">Previous</span>
+            <span class="page-btn" aria-disabled="true">{{ t('Previous') }}</span>
         @else
-            <a class="page-btn" href="{{ $paginator->previousPageUrl() }}" rel="prev">Previous</a>
+            <a class="page-btn" href="{{ $paginator->previousPageUrl() }}" rel="prev">{{ t('Previous') }}</a>
         @endif
 
         @foreach ($elements as $element)
@@ -22,9 +22,9 @@
         @endforeach
 
         @if ($paginator->hasMorePages())
-            <a class="page-btn" href="{{ $paginator->nextPageUrl() }}" rel="next">Next</a>
+            <a class="page-btn" href="{{ $paginator->nextPageUrl() }}" rel="next">{{ t('Next') }}</a>
         @else
-            <span class="page-btn" aria-disabled="true">Next</span>
+            <span class="page-btn" aria-disabled="true">{{ t('Next') }}</span>
         @endif
     </nav>
 @endif

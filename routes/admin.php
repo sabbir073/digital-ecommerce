@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\HomePageController;
+use App\Http\Controllers\Admin\InterfaceTextController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuController;
@@ -200,6 +201,9 @@ Route::middleware('admin.auth')->group(function () {
     Route::put('settings/emails/{key}', [EmailTemplateController::class, 'update'])->middleware('permission:settings,edit')->name('settings.emails.update');
     Route::delete('settings/emails/{key}', [EmailTemplateController::class, 'reset'])->middleware('permission:settings,edit')->name('settings.emails.reset');
     Route::post('settings/emails/{key}/preview', [EmailTemplateController::class, 'preview'])->middleware('permission:settings,view')->name('settings.emails.preview');
+
+    Route::get('settings/text', [InterfaceTextController::class, 'index'])->middleware('permission:settings,view')->name('settings.text');
+    Route::put('settings/text', [InterfaceTextController::class, 'update'])->middleware('permission:settings,edit')->name('settings.text.update');
 
     // Payment settings (Stripe keys are Super Admin only, enforced in the controller)
     Route::get('settings/payments', [PaymentSettingsController::class, 'edit'])->middleware('permission:settings,view')->name('settings.payments');

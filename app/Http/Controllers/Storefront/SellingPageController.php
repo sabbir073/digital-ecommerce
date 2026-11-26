@@ -135,11 +135,11 @@ class SellingPageController extends Controller
             'country' => ['required', Rule::in(array_keys(config('countries')))],
             'postcode' => [Rule::requiredIf(fn () => in_array($request->input('country'), ['US', 'CA'], true)), 'nullable', 'string', 'max:20'],
         ] + $extraRules, $extraMessages + [
-            'email.required' => 'Enter your email so we can send your download links.',
-            'email.email' => 'That email address does not look right.',
-            'name.required' => 'Enter your name.',
-            'country.required' => 'Choose your country.',
-            'postcode.required' => 'Enter your ZIP or postal code.',
+            'email.required' => t('Enter your email so we can send your download links.'),
+            'email.email' => t('That email address does not look right.'),
+            'name.required' => t('Enter your name.'),
+            'country.required' => t('Choose your country.'),
+            'postcode.required' => t('Enter your ZIP or postal code.'),
         ]);
 
         $offer = $this->offer($page, (int) $data['offer_id']);

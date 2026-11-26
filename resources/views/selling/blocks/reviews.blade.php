@@ -11,7 +11,7 @@
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                             @include('storefront.partials.stars', ['rating' => $review->rating, 'class' => 'sp-stars'])
                             @if ($review->verified)
-                                <span class="text-[13px] font-semibold">Verified buyer</span>
+                                <span class="text-[13px] font-semibold">{{ t('Verified buyer') }}</span>
                             @endif
                         </div>
                         @if ($review->title)

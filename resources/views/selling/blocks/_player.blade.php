@@ -1,5 +1,5 @@
 {{-- A video that loads nothing from the video host until the customer presses play. --}}
-<div class="sp-video" data-video data-kind="{{ $video['kind'] }}" data-src="{{ $video['src'] }}" data-title="{{ $title ?: 'Video' }}">
+<div class="sp-video" data-video data-kind="{{ $video['kind'] }}" data-src="{{ $video['src'] }}" data-title="{{ $title ?: t('Video') }}">
     @if ($poster)
         <img src="{{ $poster->sizeUrl(960) }}" srcset="{{ $poster->srcset() }}" sizes="(min-width: 1120px) 1072px, 100vw" alt="" width="{{ $poster->width }}" height="{{ $poster->height }}"
              @if ($eager ?? false) fetchpriority="high" @else loading="lazy" @endif class="h-full w-full object-cover">

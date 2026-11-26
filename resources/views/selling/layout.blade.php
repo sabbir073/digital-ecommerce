@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-currency="{{ $currencyFormat }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,7 +19,7 @@
     @include('storefront.partials.theme-head')
 </head>
 <body class="bg-surface text-ink">
-    <a href="#main" class="skip-link">Skip to content</a>
+    <a href="#main" class="skip-link">{{ t('Skip to content') }}</a>
 
     {{-- No store navigation here, so nothing pulls the customer away from the page. --}}
     <header class="border-b border-line bg-surface">
@@ -37,7 +37,7 @@
 
     <footer class="container-selling flex flex-wrap justify-between gap-3 py-7 text-[14px] text-muted">
         <span>&copy; {{ date('Y') }} {{ $storeName }}</span>
-        <span>Secure card payment by Stripe</span>
+        <span>{{ t('Secure card payment by Stripe') }}</span>
     </footer>
 
     @if (! ($builder ?? false) && ($chat['onSellingPages'] ?? false))
@@ -45,6 +45,9 @@
         @include('storefront.partials.chat', ['chatClass' => 'chat-raised'])
     @endif
 
+    @if ($uiText)
+        <script type="application/json" id="ui-text">{!! json_encode($uiText, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!}</script>
+    @endif
     @stack('end')
 </body>
 </html>

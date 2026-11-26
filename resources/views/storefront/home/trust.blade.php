@@ -1,5 +1,5 @@
 @if (! empty($s['items']))
-    <section class="container-store section-gap" aria-label="Why shop with us">
+    <section class="container-store section-gap" aria-label="{{ t('Why shop with us') }}">
         <ul class="grid gap-px overflow-hidden rounded-panel border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
             @foreach ($s['items'] as $item)
                 <li class="flex gap-4 bg-surface p-6">

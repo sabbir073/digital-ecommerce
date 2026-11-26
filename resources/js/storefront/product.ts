@@ -1,3 +1,4 @@
+import { money, t } from './shared';
 // Product page: gallery, variant pickers and quantity stepper (PRD section 3).
 // Loaded only on product pages.
 
@@ -16,8 +17,6 @@ interface ProductState {
     variants: VariantState[];
 }
 
-const money = (cents: number): string =>
-    (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
 const available = (stock: number | null): boolean => stock === null || stock > 0;
 
@@ -158,17 +157,17 @@ function init(): void {
         }
         if (saveEl) {
             saveEl.hidden = !onSale;
-            saveEl.textContent = onSale ? `Save ${money((compareAt as number) - price)}` : '';
+            saveEl.textContent = onSale ? t('Save :amount', { amount: money((compareAt as number) - price) }) : '';
         }
         if (totalEl) totalEl.textContent = money(price * quantity);
-        if (addLabel) addLabel.textContent = `Add to cart · ${money(price * quantity)}`;
+        if (addLabel) addLabel.textContent = t('Add to cart') + ' · ' + money(price * quantity);
         if (variantInput) variantInput.value = variant ? String(variant.id) : '';
 
         if (noteEl) {
             noteEl.textContent = soldOut
                 ? hasVariants && !variant
-                    ? 'This combination is not available'
-                    : 'Out of stock'
+                    ? t('This combination is not available')
+                    : t('Out of stock')
                 : stock !== null && stock <= 5
                   ? `Only ${stock} left`
                   : 'In stock';

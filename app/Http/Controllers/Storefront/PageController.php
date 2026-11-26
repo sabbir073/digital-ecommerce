@@ -41,11 +41,11 @@ class PageController extends Controller
             'email' => ['required', 'email', 'max:255'],
             'message' => ['required', 'string', 'min:5', 'max:3000'],
         ], [
-            'name.required' => 'Enter your name.',
-            'email.required' => 'Enter your email so we can reply.',
-            'email.email' => 'Enter a valid email address.',
-            'message.required' => 'Write your message.',
-            'message.min' => 'Write a few more words so we can help.',
+            'name.required' => t('Enter your name.'),
+            'email.required' => t('Enter your email so we can reply.'),
+            'email.email' => t('Enter a valid email address.'),
+            'message.required' => t('Write your message.'),
+            'message.min' => t('Write a few more words so we can help.'),
         ]);
 
         // A filled hidden field means a bot: answer as if it worked and keep nothing.
@@ -62,6 +62,6 @@ class PageController extends Controller
             }
         }
 
-        return back()->with('success', 'Thank you. Your message was sent and we will reply by email.')->withFragment('contact');
+        return back()->with('success', t('Thank you. Your message was sent and we will reply by email.'))->withFragment('contact');
     }
 }

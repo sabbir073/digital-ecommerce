@@ -10,20 +10,20 @@
     <h2 id="reviews-heading" class="section-heading">{{ $heading }}</h2>
 
     @if ($summary['count'] === 0)
-        <p class="mt-4 text-muted">No reviews yet. Be the first to write one.</p>
+        <p class="mt-4 text-muted">{{ t('No reviews yet. Be the first to write one.') }}</p>
     @else
         <div class="review-summary mt-7">
             <div>
                 <p class="font-heading text-[48px] font-semibold leading-none tracking-tight">{{ number_format($summary['average'], 1) }}</p>
                 <p class="mt-3">@include('storefront.partials.rating', ['average' => $summary['average'], 'count' => $summary['count']])</p>
-                <p class="mt-1 text-label text-muted">Based on {{ number_format($summary['count']) }} {{ $summary['count'] === 1 ? 'review' : 'reviews' }}</p>
+                <p class="mt-1 text-label text-muted">{{ $summary['count'] === 1 ? t('Based on 1 review') : t('Based on :count reviews', ['count' => number_format($summary['count'])]) }}</p>
             </div>
-            <ul class="grid gap-1.5" aria-label="Reviews by star rating">
+            <ul class="grid gap-1.5" aria-label="{{ t('Reviews by star rating') }}">
                 @foreach ($summary['stars'] as $star => $total)
                     @php $share = $summary['count'] > 0 ? round($total / $summary['count'] * 100) : 0; $active = $filters['stars'] === $star; @endphp
                     <li>
                         <a href="{{ $link(['stars' => $active ? null : $star]) }}" class="review-bar {{ $active ? 'review-bar-active' : '' }}" @if ($active) aria-current="true" @endif
-                           aria-label="{{ $star }} {{ $star === 1 ? 'star' : 'stars' }}: {{ number_format($total) }} {{ $total === 1 ? 'review' : 'reviews' }}. {{ $active ? 'Show all ratings' : 'Show only these' }}">
+                           aria-label="{{ t(':stars stars: :count reviews.', ['stars' => $star, 'count' => number_format($total)]) }} {{ $active ? t('Show all ratings') : t('Show only these') }}">
                             <span class="w-14 shrink-0 whitespace-nowrap">{{ $star }} {{ $star === 1 ? 'star' : 'stars' }}</span>
                             <span class="review-bar-track"><span class="review-bar-fill" style="width: {{ $share }}%"></span></span>
                             <span class="w-9 shrink-0 text-right text-muted">{{ number_format($total) }}</span>
@@ -38,7 +38,7 @@
                 <input type="hidden" name="stars" value="{{ $filters['stars'] }}">
             @endif
             <div>
-                <label class="field-label" for="rv-sort">Sort by</label>
+                <label class="field-label" for="rv-sort">{{ t('Sort by') }}</label>
                 <select class="field" id="rv-sort" name="sort">
                     @foreach (\App\Services\Reviews\ReviewListing::SORTS as $value => $label)
                         <option value="{{ $value }}" @selected($filters['sort'] === $value)>{{ $label }}</option>
@@ -47,9 +47,9 @@
             </div>
             @if (count($countries) > 1)
                 <div>
-                    <label class="field-label" for="rv-filter-country">Country</label>
+                    <label class="field-label" for="rv-filter-country">{{ t('Country') }}</label>
                     <select class="field" id="rv-filter-country" name="country">
-                        <option value="">All countries</option>
+                        <option value="">{{ t('All countries') }}</option>
                         @foreach ($countries as $code => $name)
                             <option value="{{ $code }}" @selected($filters['country'] === $code)>{{ $name }}</option>
                         @endforeach
@@ -58,16 +58,16 @@
             @endif
             <label class="check min-h-12">
                 <input type="checkbox" name="photos" value="1" @checked($filters['photos'])>
-                <span>With photos</span>
+                <span>{{ t('With photos') }}</span>
             </label>
-            <button type="submit" class="btn btn-secondary btn-sm">Apply</button>
+            <button type="submit" class="btn btn-secondary btn-sm">{{ t('Apply') }}</button>
             @if ($filtered)
-                <a href="{{ $base }}#reviews" class="inline-flex min-h-11 items-center font-medium text-accent hover:underline">Clear filters</a>
+                <a href="{{ $base }}#reviews" class="inline-flex min-h-11 items-center font-medium text-accent hover:underline">{{ t('Clear filters') }}</a>
             @endif
         </form>
 
         @if ($reviews->isEmpty())
-            <p class="mt-8 text-muted">No reviews match these filters.</p>
+            <p class="mt-8 text-muted">{{ t('No reviews match these filters.') }}</p>
         @else
             <ul class="mt-4">
                 @foreach ($reviews as $review)
