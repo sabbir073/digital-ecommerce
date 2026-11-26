@@ -108,6 +108,7 @@ export default function SellingPageEdit({ page, offers: savedOffers, products, b
                             <Button component="a" href={page.previewUrl} target="_blank" rel="noopener" startIcon={<OpenInNew />} disabled={dirty}>Preview</Button>
                         </span>
                     </Tooltip>
+                    {can('seo') && <Button component={RouterLink} href={`/admin/seo/selling_page/${page.id}`}>SEO</Button>}
                     {canEdit && <Button variant="outlined" onClick={() => save()} disabled={saving || !dirty}>{dirty ? 'Save' : 'Saved'}</Button>}
                     {canPublish && page.status === 'published' && (
                         <Button color="inherit" onClick={() => router.post(`/admin/selling-pages/${page.id}/unpublish`, {}, { preserveScroll: true })}>Unpublish</Button>

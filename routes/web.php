@@ -12,10 +12,16 @@ use App\Http\Controllers\Storefront\PageController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ReviewController;
 use App\Http\Controllers\Storefront\SellingPageController;
+use App\Http\Controllers\Storefront\SeoFilesController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+
+// Files for search engines, built from the SEO settings
+Route::get('/robots.txt', [SeoFilesController::class, 'robots'])->name('robots');
+Route::get('/sitemap.xml', [SeoFilesController::class, 'index'])->name('sitemap');
+Route::get('/sitemap-{name}.xml', [SeoFilesController::class, 'show'])->where('name', '[a-z-]+')->name('sitemap.show');
 Route::get('/products', [CatalogController::class, 'index'])->name('products');
 Route::get('/c/{slug}', [CatalogController::class, 'category'])->name('category');
 Route::get('/search', [CatalogController::class, 'search'])->name('search');

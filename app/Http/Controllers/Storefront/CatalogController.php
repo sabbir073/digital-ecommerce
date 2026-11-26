@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Services\Seo\SeoBuilder;
+use App\Services\Seo\StructuredData;
 use App\Services\Storefront\CatalogQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -45,6 +47,40 @@ class CatalogController extends Controller
             'sorts' => CatalogQuery::SORTS,
             'allCategories' => Category::query()->whereNull('parent_id')->with('children')->orderBy('position')->orderBy('name')->get(),
             'action' => $request->url(),
+            'seo' => $this->seo($request, $title, $category, $search, $result['products']->currentPage()),
         ]);
+    }
+
+    /**
+     * Lists follow three rules: a search is never indexed; a filtered or sorted list is not indexed and
+     * points at the clean address; page 2 and later keep their own address so they are not folded into page 1.
+     *
+     * @return array<string, mixed>
+     */
+    private function seo(Request $request, string $title, ?Category $category, ?string $search, int $page): array
+    {
+        $builder = app(SeoBuilder::class);
+        $filtered = collect($request->query())->except(['page'])->filter(fn ($value) => $value !== null && $value !== '' && $value !== [])->isNotEmpty();
+        $clean = $request->url();
+        $options = [
+            'canonical' => $filtered || $page < 2 ? $clean : $clean.'?page='.$page,
+            'noindex' => $filtered || $search !== null,
+        ];
+
+        if ($category === null) {
+            return $builder->page($title, '', $options);
+        }
+
+        $trail = [['name' => t('Home'), 'url' => route('home')]];
+        if ($category->parent) {
+            $trail[] = ['name' => $category->parent->name, 'url' => url('/c/'.$category->parent->slug)];
+        }
+        $trail[] = ['name' => $category->name, 'url' => url('/c/'.$category->slug)];
+        // The owner's own canonical for the category wins on its first, unfiltered page only.
+        if (! $filtered && $page < 2) {
+            unset($options['canonical']);
+        }
+
+        return $builder->for('category', $category, $options + ['json_ld' => [app(StructuredData::class)->breadcrumbs($trail)]]);
     }
 }

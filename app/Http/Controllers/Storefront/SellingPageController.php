@@ -13,6 +13,8 @@ use App\Services\Checkout\CouponService;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Selling\OfferPricing;
 use App\Services\Selling\PagePresenter;
+use App\Services\Seo\SeoBuilder;
+use App\Services\Seo\StructuredData;
 use App\Services\StoreSettings;
 use App\Support\Blocks;
 use Illuminate\Http\JsonResponse;
@@ -46,6 +48,8 @@ class SellingPageController extends Controller
 
         $blocks = Blocks::normalize($preview ? ($page->draft_blocks ?? $page->published_blocks) : $page->published_blocks);
         $data = $this->presenter->present($page, $blocks);
+        $faq = app(StructuredData::class)->faq($blocks);
+        $data['seo'] = app(SeoBuilder::class)->for('selling_page', $page, ['json_ld' => array_values(array_filter([app(StructuredData::class)->product($page->product), $faq]))]);
 
         if (! $preview) {
             $this->countView($request, $page);

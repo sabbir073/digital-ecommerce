@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSeo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /** A one-page selling page: one product, one URL, pay without leaving (PRD section 4). */
 class SellingPage extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasSeo, SoftDeletes;
 
     public const DRAFT = 'draft';
 

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthenticateAdmin;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\HandleRedirects;
 use App\Http\Middleware\MaintenanceMode;
 use App\Http\Middleware\RequirePermission;
 use Illuminate\Foundation\Application;
@@ -29,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.auth' => AuthenticateAdmin::class,
             'permission' => RequirePermission::class,
         ]);
+        // Runs before routing, so an old address is redirected even though no route matches it.
+        $middleware->append(HandleRedirects::class);
         $middleware->web(append: [MaintenanceMode::class]);
         // Stripe's webhook is verified by its signature instead of a CSRF token.
         $middleware->validateCsrfTokens(except: ['stripe/webhook']);

@@ -22,6 +22,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+import TravelExploreOutlined from '@mui/icons-material/TravelExploreOutlined';
 import Typography from '@mui/material/Typography';
 import { type FormEvent, useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
@@ -115,6 +116,7 @@ export default function ContentPages({ pages }: { pages: PageRow[] }) {
                                         <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                                             <Tooltip title="Edit content"><IconButton aria-label={`Edit content of ${page.title}`} component={RouterLink} href={`/admin/pages/${page.id}/builder`}><DashboardCustomizeOutlined /></IconButton></Tooltip>
                                             {can('content', 'edit') && <Tooltip title="Name and address"><IconButton aria-label={`Name and address of ${page.title}`} onClick={() => setEditing(page)}><EditOutlined /></IconButton></Tooltip>}
+                                            {can('seo') && <Tooltip title="SEO"><IconButton aria-label={`SEO of ${page.title}`} component={RouterLink} href={`/admin/seo/page/${page.id}`}><TravelExploreOutlined /></IconButton></Tooltip>}
                                             {page.status === 'published' && <Tooltip title="Open page"><IconButton aria-label={`Open ${page.title}`} component="a" href={page.url} target="_blank" rel="noopener"><OpenInNew /></IconButton></Tooltip>}
                                             {can('content', 'publish') && page.status === 'published' && <Button size="small" onClick={() => router.post(`/admin/pages/${page.id}/unpublish`, {}, { preserveScroll: true })}>Unpublish</Button>}
                                             {can('content', 'delete') && <Tooltip title="Delete"><IconButton aria-label={`Delete ${page.title}`} onClick={() => setDeleting(page)}><DeleteOutlined /></IconButton></Tooltip>}

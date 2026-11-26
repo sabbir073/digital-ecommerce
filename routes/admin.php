@@ -21,10 +21,13 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductCsvController;
+use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SecuritySettingsController;
 use App\Http\Controllers\Admin\SellingPageController;
+use App\Http\Controllers\Admin\SeoController;
+use App\Http\Controllers\Admin\SeoSettingsController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StoreSettingsController;
 use App\Http\Controllers\Admin\ThemeController;
@@ -204,6 +207,26 @@ Route::middleware('admin.auth')->group(function () {
 
     Route::get('settings/text', [InterfaceTextController::class, 'index'])->middleware('permission:settings,view')->name('settings.text');
     Route::put('settings/text', [InterfaceTextController::class, 'update'])->middleware('permission:settings,edit')->name('settings.text.update');
+
+    // SEO: the dashboard, the panel of each item, site-wide settings, redirects and the 404 log
+    Route::get('seo', [SeoController::class, 'dashboard'])->middleware('permission:seo,view')->name('seo.dashboard');
+    Route::get('seo/settings', [SeoSettingsController::class, 'edit'])->middleware('permission:seo,view')->name('seo.settings');
+    Route::put('seo/settings/templates', [SeoSettingsController::class, 'updateTemplates'])->middleware('permission:seo,edit')->name('seo.settings.templates');
+    Route::put('seo/settings/verification', [SeoSettingsController::class, 'updateVerification'])->middleware('permission:seo,edit')->name('seo.settings.verification');
+    Route::put('seo/settings/code', [SeoSettingsController::class, 'updateCode'])->middleware('permission:seo,edit')->name('seo.settings.code');
+    Route::put('seo/settings/robots', [SeoSettingsController::class, 'updateRobots'])->middleware('permission:seo,edit')->name('seo.settings.robots');
+    Route::delete('seo/settings/robots', [SeoSettingsController::class, 'resetRobots'])->middleware('permission:seo,edit')->name('seo.settings.robots.reset');
+    Route::put('seo/settings/sitemap', [SeoSettingsController::class, 'updateSitemap'])->middleware('permission:seo,edit')->name('seo.settings.sitemap');
+    Route::get('seo/redirects', [RedirectController::class, 'index'])->middleware('permission:seo,view')->name('seo.redirects');
+    Route::post('seo/redirects', [RedirectController::class, 'store'])->middleware('permission:seo,create')->name('seo.redirects.store');
+    Route::post('seo/redirects/import', [RedirectController::class, 'import'])->middleware('permission:seo,create')->name('seo.redirects.import');
+    Route::put('seo/redirects/{redirect}', [RedirectController::class, 'update'])->middleware('permission:seo,edit')->name('seo.redirects.update');
+    Route::delete('seo/redirects/{redirect}', [RedirectController::class, 'destroy'])->middleware('permission:seo,delete')->name('seo.redirects.destroy');
+    Route::delete('seo/not-found', [RedirectController::class, 'clearNotFound'])->middleware('permission:seo,delete')->name('seo.not-found.clear');
+    Route::delete('seo/not-found/{log}', [RedirectController::class, 'destroyNotFound'])->middleware('permission:seo,delete')->name('seo.not-found.destroy');
+    Route::get('seo/{type}/{id?}', [SeoController::class, 'edit'])->middleware('permission:seo,view')->whereNumber('id')->name('seo.edit');
+    Route::post('seo-check/{type}/{id?}', [SeoController::class, 'check'])->middleware('permission:seo,view')->whereNumber('id')->name('seo.check');
+    Route::put('seo/{type}/{id?}', [SeoController::class, 'update'])->middleware('permission:seo,edit')->whereNumber('id')->name('seo.update');
 
     // Payment settings (Stripe keys are Super Admin only, enforced in the controller)
     Route::get('settings/payments', [PaymentSettingsController::class, 'edit'])->middleware('permission:settings,view')->name('settings.payments');

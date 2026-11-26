@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Storefront;
 use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
+use App\Models\Setting;
+use App\Services\Seo\SeoBuilder;
+use App\Services\Seo\StructuredData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +30,10 @@ class BlogController extends Controller
             'current' => $current,
             'tag' => $tag,
             'categories' => BlogCategory::query()->whereHas('posts', fn ($q) => $q->live())->orderBy('name')->get(),
+            'seo' => app(SeoBuilder::class)->page($current ? $current->name.' · '.t('Blog') : t('Blog'), t('News, guides and updates from :store.', ['store' => Setting::get('store.name', config('app.name'))]), [
+                'canonical' => $tag !== '' ? route('blog.index') : ($posts->currentPage() > 1 ? $request->url().'?page='.$posts->currentPage() : $request->url()),
+                'noindex' => $tag !== '',
+            ]),
         ]);
     }
 
@@ -40,6 +47,7 @@ class BlogController extends Controller
 
         return view('storefront.blog.show', [
             'post' => $post,
+            'seo' => app(SeoBuilder::class)->for('post', $post, ['json_ld' => [app(StructuredData::class)->article($post)]]),
             'preview' => $preview,
             'more' => BlogPost::query()->live()->with(['cover', 'category'])->whereKeyNot($post->id)
                 ->when($post->blog_category_id, fn ($q) => $q->orderByRaw('CASE WHEN blog_category_id = ? THEN 0 ELSE 1 END', [$post->blog_category_id]))

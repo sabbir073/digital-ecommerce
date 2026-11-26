@@ -92,6 +92,7 @@ export default function BlogEdit({ post, categories, authors, me }: Props) {
                 <Stack direction="row" sx={{ gap: 1.5, flexWrap: 'wrap' }}>
                     <Button component={RouterLink} href="/admin/blog" variant="outlined" startIcon={<ArrowBack />}>Blog</Button>
                     {post && <Button component="a" href={post.url} target="_blank" rel="noopener" variant="outlined" startIcon={<OpenInNew />}>{post.live ? 'View' : 'Preview'}</Button>}
+                    {post && can('seo') && <Button component={RouterLink} href={`/admin/seo/post/${post.id}`} variant="outlined">SEO</Button>}
                 </Stack>
             }
         >
