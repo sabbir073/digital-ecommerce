@@ -3,9 +3,9 @@
 A CMS-driven store for digital products, with a normal catalog checkout and one-page selling pages.
 Built with Laravel 13, React, Tailwind CSS, Material UI (admin) and MySQL.
 
-The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains Phases 1 to 10.
+The product requirements and the approved build plan live in the project documents. The build ran in 11 phases, and all of them are in this repository.
 
-## What works today (Phases 1 to 10)
+## What works today
 
 - Design tokens from PRD section 8, shared by the storefront (Tailwind) and the admin panel (Material UI theme).
 - Shared storefront header and footer, with the announcement bar and category navigation read from the database.
@@ -48,6 +48,9 @@ The product requirements and the approved build plan live in the project documen
 - Cookie banner with editable text and categories, for every visitor or only Europe. No statistics or marketing tag loads before the visitor allows it, the choice is passed to Google consent mode and Meta, and every choice is recorded. Visitors can reopen it from "Cookie settings" in the footer.
 - Event log of the newest 500 events with what was sent and what the service answered; product feeds for Google Merchant Center (`/feeds/google.xml`) and Meta (`/feeds/meta.csv`); the SMTP account for store email with a test button; custom scripts site-wide or per address (Super Admin only); extra tracking IDs per selling page.
 - `docs/integrations.md` lists what was read from each service's official documentation and what still has to be confirmed with that service's own debug tool on a real account.
+- Backups (Admin > Backups, Super Admins only): a database backup every night, a button to make one now, download, delete, and how many to keep. `php artisan backup:restore <name>` puts one back; an automated test backs up, damages and restores a database on every run.
+- Customers can ask on their account page for their personal data to be deleted. Staff see the request under Customers and carry it out: the account, chats and messages are removed, download links stop, order records stay without name or email, and reviews stay signed "Former customer".
+- Hardening: HTTPS redirect and HSTS on a live https store, headers against framing and content sniffing, secure session cookies, long cache lifetimes and compression for static files, Stripe's script loaded only when the order form is near the screen, and every tap target at least 44px.
 
 ## Local setup
 
@@ -80,6 +83,16 @@ Open `http://localhost:8000` for the storefront and `http://localhost:8000/admin
 4. Emails and expiry of unpaid orders run from the scheduler and queue. Locally run `php artisan schedule:work` (it also drains the queue), or set `QUEUE_CONNECTION=sync` to send emails straight away.
 
 Test card: `4242 4242 4242 4242` succeeds, `4000 0000 0000 0002` is declined, `4000 0027 6000 3184` asks for 3D Secure.
+
+## Going live (cPanel or any PHP hosting)
+
+1. Upload the code, run `composer install --no-dev --optimize-autoloader`, and upload `public/build` (from `npm run build`). Point the domain at the `public` folder.
+2. In `.env` set `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://your-domain` and the database lines. Behind Cloudflare also set `TRUSTED_PROXIES=*`.
+3. Run `php artisan migrate --force --seed`, `php artisan admin:create-super`, `php artisan storage:link` and `php artisan config:cache`.
+4. Add one cron job that runs every minute: `php /home/USER/path/artisan schedule:run`. It sends email, expires unpaid orders, sends review requests and makes the nightly backup.
+5. Run `php artisan store:check`. It lists what is still missing (live Stripe keys, the SMTP account, the cron job, a first backup) and fails while anything unsafe is left.
+
+Backups: `php artisan backup:run`, `backup:list` and `backup:restore <name>`. A backup holds the database only. Copy `storage/app` (product files and images) and the `.env` file with your hosting's file backup; saved keys and passwords can only be read with the same `APP_KEY`.
 
 ## Tests
 

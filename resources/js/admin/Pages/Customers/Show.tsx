@@ -1,4 +1,6 @@
+import { router } from '@inertiajs/react';
 import ArrowBack from '@mui/icons-material/ArrowBack';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -11,7 +13,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+import { useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import RouterLink from '../../components/RouterLink';
 import { useCan } from '../../lib/can';
 import { formatDateTime, formatMoney } from '../../lib/format';
@@ -19,7 +23,7 @@ import { STATUS_COLOR } from '../Orders/Index';
 import type { Customer } from './Index';
 
 interface Props {
-    customer: Customer & { refunded: number; reviews: number };
+    customer: Customer & { refunded: number; reviews: number; deletionRequestedAt: string | null };
     orders: { id: number; number: string; status: string; statusLabel: string; source: string; items: number; total: number; createdAt: string | null }[];
 }
 
@@ -36,6 +40,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 export default function CustomerShow({ customer, orders }: Props) {
     const can = useCan();
+    const [erasing, setErasing] = useState(false);
 
     return (
         <AdminLayout title={customer.name ?? customer.email} actions={<Button component={RouterLink} href="/admin/customers" variant="outlined" startIcon={<ArrowBack />}>Customers</Button>}>
@@ -43,6 +48,8 @@ export default function CustomerShow({ customer, orders }: Props) {
                 {customer.email}
                 <Chip size="small" variant="outlined" label={customer.hasAccount ? `Account since ${formatDateTime(customer.joinedAt)}` : 'Guest, no account'} />
             </Typography>
+
+            {customer.deletionRequestedAt && <Alert severity="warning" sx={{ mb: 3 }}>This customer asked on {formatDateTime(customer.deletionRequestedAt)} for their account and personal data to be deleted.</Alert>}
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
                 <Stat label="Orders" value={String(customer.orders)} />
@@ -87,6 +94,20 @@ export default function CustomerShow({ customer, orders }: Props) {
                     </TableContainer>
                 )}
             </Card>
+
+            {can('customers', 'delete') && (
+                <Card sx={{ mt: 3 }}>
+                    <CardContent>
+                        <Typography variant="h4" component="h2">Delete personal data</Typography>
+                        <Typography sx={{ color: 'text.secondary', mt: 0.5, mb: 2, maxWidth: 720 }}>
+                            For a customer who asks for their data to be deleted. The account, chats and messages are removed, and the download links stop working. Order records are kept for your accounts, without the name, email or phone number. Reviews stay, signed "Former customer". Stripe keeps its own payment records: remove the customer there too, in your Stripe dashboard.
+                        </Typography>
+                        <Button color="error" variant="outlined" onClick={() => setErasing(true)}>Delete this customer's personal data</Button>
+                    </CardContent>
+                </Card>
+            )}
+            <ConfirmDialog open={erasing} danger title="Delete this customer's personal data?" text={`Everything that identifies ${customer.email} is removed. This cannot be undone.`} confirmLabel="Delete personal data" onClose={() => setErasing(false)}
+                onConfirm={() => router.delete('/admin/customers/data', { data: { email: customer.email }, onFinish: () => setErasing(false) })} />
         </AdminLayout>
     );
 }

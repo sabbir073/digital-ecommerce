@@ -61,6 +61,24 @@ async function post<T>(url: string, body: Record<string, unknown>): Promise<{ ok
     return { ok: response.ok, status: response.status, data };
 }
 
+/** Resolves when the element is within about one screen of the viewport, or as soon as the visitor touches the form around it. */
+function whenNear(element: HTMLElement): Promise<void> {
+    return new Promise((resolve) => {
+        if (!('IntersectionObserver' in window)) return resolve();
+        const form = element.closest('form') ?? element.parentElement;
+        const done = () => {
+            observer.disconnect();
+            form?.removeEventListener('focusin', done);
+            form?.removeEventListener('pointerdown', done);
+            resolve();
+        };
+        const observer = new IntersectionObserver((entries) => entries.some((entry) => entry.isIntersecting) && done(), { rootMargin: '800px 0px' });
+        observer.observe(element);
+        form?.addEventListener('focusin', done);
+        form?.addEventListener('pointerdown', done);
+    });
+}
+
 function loadStripe(): Promise<void> {
     return new Promise((resolve, reject) => {
         if ((window as unknown as { Stripe?: StripeFactory }).Stripe) return resolve();
@@ -378,8 +396,12 @@ async function checkout(): Promise<void> {
     total = Number(chosen()?.dataset.price ?? 0);
     quote();
 
-    if (config.ready && config.key && !config.preview && mount && chosen()) {
+    // Runs beside the rest, so the form answers a press even while Stripe is still loading.
+    const paymentReady = (async () => {
+        if (!(config.ready && config.key && !config.preview && mount && chosen())) return;
         try {
+            // Stripe's script is large: it is fetched only when the order form is about to come into view.
+            await whenNear(mount);
             await loadStripe();
             stripe = (window as unknown as { Stripe: StripeFactory }).Stripe(config.key);
             elements = stripe.elements({
@@ -415,12 +437,13 @@ async function checkout(): Promise<void> {
         } catch {
             setError('checkout', t('The payment form could not be loaded. Check your connection and reload the page.'));
         }
-    }
+    })();
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         if (busy) return; // a second press while paying does nothing
         clearErrors();
+        await paymentReady;
 
         let first: HTMLElement | null = null;
         FIELDS.forEach((name) => {

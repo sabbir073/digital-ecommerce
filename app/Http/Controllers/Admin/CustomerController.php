@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DataDeletionRequest;
 use App\Models\Order;
 use App\Models\Review;
 use App\Services\ActivityLogger;
+use App\Services\Customers\CustomerEraser;
 use App\Support\Csv;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +42,8 @@ class CustomerController extends Controller
         return Inertia::render('Customers/Index', [
             'customers' => $customers,
             'filters' => ['search' => $search, 'sort' => $sort],
+            'deletionRequests' => DataDeletionRequest::query()->where('status', DataDeletionRequest::PENDING)->oldest()->limit(50)->get()
+                ->map(fn (DataDeletionRequest $r) => ['email' => $r->email, 'at' => $r->created_at?->toIso8601String()]),
         ]);
     }
 
@@ -54,6 +59,7 @@ class CustomerController extends Controller
             'customer' => $this->present($row) + [
                 'refunded' => (int) $orders->sum('refunded_cents'),
                 'reviews' => Review::query()->where('email', $email)->count(),
+                'deletionRequestedAt' => DataDeletionRequest::query()->where('email', $email)->where('status', DataDeletionRequest::PENDING)->value('created_at')?->toIso8601String(),
             ],
             'orders' => $orders->map(fn (Order $o) => [
                 'id' => $o->id,
@@ -66,6 +72,20 @@ class CustomerController extends Controller
                 'createdAt' => $o->created_at?->toIso8601String(),
             ]),
         ]);
+    }
+
+    /** Delete what identifies this person. Order records stay, without the name or email. */
+    public function erase(Request $request, CustomerEraser $eraser, ActivityLogger $activity): RedirectResponse
+    {
+        $data = $request->validate(['email' => ['required', 'email']]);
+        $email = Str::lower($data['email']);
+        abort_unless($this->query('')->where('c.email', $email)->exists(), 404);
+
+        $done = $eraser->erase($email);
+        // The log says that it happened, not who it was.
+        $activity->log('delete', 'customers', null, 'Personal data of one customer', ['orders' => $done['orders'], 'account' => $done['account']]);
+
+        return redirect()->route('admin.customers.index')->with('success', 'The personal data was deleted. '.$done['orders'].' order '.($done['orders'] === 1 ? 'record was' : 'records were').' kept without a name or email.');
     }
 
     public function export(ActivityLogger $activity): StreamedResponse
@@ -83,7 +103,8 @@ class CustomerController extends Controller
 
     private function query(string $search): Builder
     {
-        $emails = DB::table('orders')->select('email')->whereNotNull('paid_at')->union(DB::table('users')->select('email'));
+        // Orders of a deleted customer no longer belong to a person, so they are not listed here.
+        $emails = DB::table('orders')->select('email')->whereNotNull('paid_at')->where('email', 'not like', '%@'.CustomerEraser::DOMAIN)->union(DB::table('users')->select('email'));
 
         return DB::query()->fromSub($emails, 'c')
             ->leftJoin('orders as o', fn ($join) => $join->on('o.email', '=', 'c.email')->whereNotNull('o.paid_at'))

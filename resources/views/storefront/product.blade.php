@@ -61,7 +61,7 @@
 
             <div>
                 @if ($product->category)
-                    <a href="{{ route('category', $product->category->slug) }}" class="text-label font-semibold uppercase tracking-wide text-muted hover:text-ink">{{ $product->category->name }}</a>
+                    <a href="{{ route('category', $product->category->slug) }}" class="inline-flex min-h-11 items-center text-label font-semibold uppercase tracking-wide text-muted hover:text-ink">{{ $product->category->name }}</a>
                 @endif
                 <h1 class="mt-2 text-[30px] font-bold md:text-[38px]">{{ $product->name }}</h1>
 

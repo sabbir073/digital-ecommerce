@@ -55,6 +55,12 @@ return [
     'url' => env('APP_URL', 'http://localhost'),
 
     /*
+    | The proxies in front of the site whose forwarded headers are believed: empty for none (the default on
+    | ordinary hosting), "*" behind Cloudflare, or a comma-separated list of addresses.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES', ''),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------

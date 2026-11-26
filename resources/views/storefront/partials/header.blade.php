@@ -12,7 +12,7 @@
 
 <header class="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur">
     <div class="container-store flex h-16 items-center gap-4 lg:h-[72px]">
-        <a href="{{ url('/') }}" class="font-heading text-[20px] font-bold tracking-tight">
+        <a href="{{ url('/') }}" class="inline-flex min-h-11 items-center font-heading text-[20px] font-bold tracking-tight">
             @include('storefront.partials.logo')
         </a>
 
