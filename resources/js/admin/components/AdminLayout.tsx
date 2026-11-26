@@ -1,12 +1,15 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import AdminPanelSettingsOutlined from '@mui/icons-material/AdminPanelSettingsOutlined';
+import CategoryOutlined from '@mui/icons-material/CategoryOutlined';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
+import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import MenuOutlined from '@mui/icons-material/MenuOutlined';
 import PersonOutline from '@mui/icons-material/PersonOutlineOutlined';
+import PhotoLibraryOutlined from '@mui/icons-material/PhotoLibraryOutlined';
 import Alert from '@mui/material/Alert';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
@@ -46,6 +49,14 @@ const NAV: { heading: string; items: NavItem[] }[] = [
     {
         heading: 'Overview',
         items: [{ label: 'Dashboard', href: '/admin', icon: <DashboardOutlined />, match: (p) => p === '/admin' }],
+    },
+    {
+        heading: 'Catalog',
+        items: [
+            { label: 'Products', href: '/admin/products', icon: <Inventory2Outlined />, module: 'products', match: (p) => p.startsWith('/admin/products') },
+            { label: 'Categories', href: '/admin/categories', icon: <CategoryOutlined />, module: 'categories', match: (p) => p.startsWith('/admin/categories') },
+            { label: 'Media library', href: '/admin/media', icon: <PhotoLibraryOutlined />, module: 'media', match: (p) => p.startsWith('/admin/media') },
+        ],
     },
     {
         heading: 'Team',

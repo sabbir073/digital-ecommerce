@@ -17,6 +17,22 @@ class Category extends Model
 
     public function children(): HasMany
     {
-        return $this->hasMany(self::class, 'parent_id')->orderBy('position');
+        return $this->hasMany(self::class, 'parent_id')->orderBy('position')->orderBy('name');
+    }
+
+    public function image(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'media_id');
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /** This category's id plus the ids of its sub-categories. @return list<int> */
+    public function selfAndChildIds(): array
+    {
+        return [$this->id, ...$this->children()->pluck('id')->all()];
     }
 }

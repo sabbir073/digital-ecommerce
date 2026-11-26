@@ -41,9 +41,18 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
+            'report' => false,
+        ],
+
+        // Paid digital files. Never web-accessible: served only through signed download links.
+        'downloads' => [
+            'driver' => 'local',
+            'root' => storage_path('app/downloads'),
+            'visibility' => 'private',
+            'throw' => true,
             'report' => false,
         ],
 
