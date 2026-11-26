@@ -8,7 +8,7 @@ export default defineConfig({
         laravel({
             // Storefront and admin are separate entry points, so builder and
             // admin code never loads on public pages (PRD section 9).
-            input: ['resources/css/app.css', 'resources/js/storefront/app.ts', 'resources/js/storefront/product.ts', 'resources/js/storefront/checkout.ts', 'resources/js/storefront/order.ts', 'resources/js/storefront/selling.ts', 'resources/js/admin/app.tsx'],
+            input: ['resources/css/app.css', 'resources/js/storefront/app.ts', 'resources/js/storefront/product.ts', 'resources/js/storefront/checkout.ts', 'resources/js/storefront/order.ts', 'resources/js/storefront/selling.ts', 'resources/js/admin/app.tsx', 'resources/js/admin/builder-canvas.ts', 'resources/css/builder-canvas.css'],
             refresh: true,
         }),
         react(),

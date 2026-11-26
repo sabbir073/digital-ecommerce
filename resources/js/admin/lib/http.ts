@@ -25,3 +25,17 @@ export async function postForm<T>(url: string, body: FormData): Promise<T> {
     if (!response.ok) throw new Error(`Upload failed (${response.status}).`);
     return response.json() as Promise<T>;
 }
+
+/** Send JSON and read JSON back. Used by the page builder, which saves and redraws without a page visit. */
+export async function sendJson<T>(method: 'POST' | 'PUT', url: string, body: unknown): Promise<T> {
+    const response = await fetch(url, {
+        method,
+        body: JSON.stringify(body),
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-XSRF-TOKEN': csrfToken() },
+    });
+    if (response.status === 419 || response.status === 401) throw new Error('You have been signed out. Sign in again in another tab, then keep editing here.');
+    if (response.status === 403) throw new Error('You do not have permission to do this.');
+    if (!response.ok) throw new Error(`The server did not accept the request (${response.status}).`);
+    return response.json() as Promise<T>;
+}

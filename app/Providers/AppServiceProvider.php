@@ -7,6 +7,7 @@ use App\Services\Payments\StripeGateway;
 use App\View\Composers\StorefrontComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // In the page builder, text and images carry the name of the field they edit. Customers never get these attributes.
+        Blade::directive('edit', fn (string $path) => "<?php if (\$builder ?? false) { echo ' data-edit=\"'.e($path).'\"'; } ?>");
+        Blade::directive('editimage', fn (string $path) => "<?php if (\$builder ?? false) { echo ' data-edit-image=\"'.e($path).'\"'; } ?>");
+
         View::composer(['storefront.*', 'selling.*'], StorefrontComposer::class);
 
         // Each limit has its own counter. (Plain "throttle:10,1" shares one counter

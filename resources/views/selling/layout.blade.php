@@ -8,7 +8,13 @@
     @hasSection('description')
         <meta name="description" content="@yield('description')">
     @endif
-    @vite(['resources/css/app.css', 'resources/js/storefront/app.ts', 'resources/js/storefront/selling.ts'])
+    @if ($builder ?? false)
+        {{-- The builder canvas: same page and theme, with the editing script instead of the checkout script. --}}
+        <meta name="robots" content="noindex, nofollow">
+        @vite(['resources/css/app.css', 'resources/css/builder-canvas.css', 'resources/js/admin/builder-canvas.ts'])
+    @else
+        @vite(['resources/css/app.css', 'resources/js/storefront/app.ts', 'resources/js/storefront/selling.ts'])
+    @endif
     @stack('head')
 </head>
 <body class="bg-surface text-ink">

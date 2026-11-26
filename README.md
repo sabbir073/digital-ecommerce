@@ -5,7 +5,7 @@ Built with Laravel 13, React, Tailwind CSS, Material UI (admin) and MySQL.
 
 The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains **Phase 1: Foundation**.
 
-## What works today (Phases 1 to 4)
+## What works today (Phases 1 to 5)
 
 - Design tokens from PRD section 8, shared by the storefront (Tailwind) and the admin panel (Material UI theme).
 - Shared storefront header and footer, with the announcement bar and category navigation read from the database.
@@ -26,6 +26,7 @@ The product requirements and the approved build plan live in the project documen
 - Selling pages at `/p/<slug>`: one product on one address with no store navigation, built from twelve block types (hero, benefits, image and text, gallery, video, reviews, FAQ, offer bar with countdown, table, rich text, trust row, order block). The customer picks a pack and pays on the page; the order block is replaced by the confirmation and download links.
 - Packs: one to four per page. A pack is a bundle of products and variants at one fixed price and shows "Sold out" when any item in it is out of stock.
 - Admin > Selling pages: create from the starter template or blank, edit packs and block content, preview the draft, publish (blocked until there is exactly one order block and no `[PLACEHOLDER]` text), unpublish, delete. Views, orders and conversion rate per page.
+- Page builder (Admin > Selling pages > Open builder): block library on the left, a live canvas drawn with the real storefront templates in the middle, block settings on the right. Drag blocks in from the library, drag them by the handle to reorder, or use the Move, Duplicate, Hide and Delete buttons. Click text to edit it in place and click an image to replace it. Desktop, tablet and mobile widths, undo and redo (100 steps), autosave one second after the last edit, publish, restore any of the last ten published versions, and duplicate a page. The builder's code is a separate bundle that public pages never load.
 
 ## Local setup
 

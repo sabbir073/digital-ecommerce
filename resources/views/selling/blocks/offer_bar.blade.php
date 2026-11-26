@@ -2,7 +2,7 @@
     <section data-block="offer_bar" class="sp-offerbar sp-bg-{{ $style['background'] }}" @if ($d['ends_at']) data-offer-bar @endif>
         <div class="container-selling flex flex-wrap items-center justify-center gap-x-4 gap-y-1 py-3 text-center">
             @if ($d['text'] !== '')
-                <p class="font-medium">{{ $d['text'] }}</p>
+                <p class="font-medium" @edit('text')>{{ $d['text'] }}</p>
             @endif
             @if ($d['ends_at'])
                 {{-- A real end date set in admin. When it passes the bar disappears and never restarts. --}}

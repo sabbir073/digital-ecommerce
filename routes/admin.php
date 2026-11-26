@@ -77,6 +77,12 @@ Route::middleware('admin.auth')->group(function () {
     Route::post('selling-pages', [SellingPageController::class, 'store'])->middleware('permission:selling_pages,create')->name('selling-pages.store');
     Route::get('selling-pages/{page}', [SellingPageController::class, 'edit'])->middleware('permission:selling_pages,view')->name('selling-pages.edit');
     Route::put('selling-pages/{page}', [SellingPageController::class, 'update'])->middleware('permission:selling_pages,edit')->name('selling-pages.update');
+    Route::get('selling-pages/{page}/builder', [SellingPageController::class, 'builder'])->middleware('permission:selling_pages,view')->name('selling-pages.builder');
+    Route::get('selling-pages/{page}/canvas', [SellingPageController::class, 'canvas'])->middleware('permission:selling_pages,view')->name('selling-pages.canvas');
+    Route::post('selling-pages/{page}/render', [SellingPageController::class, 'render'])->middleware('permission:selling_pages,view')->name('selling-pages.render');
+    Route::put('selling-pages/{page}/draft', [SellingPageController::class, 'saveDraft'])->middleware('permission:selling_pages,edit')->name('selling-pages.draft');
+    Route::post('selling-pages/{page}/versions/{version}/restore', [SellingPageController::class, 'restore'])->middleware('permission:selling_pages,edit')->name('selling-pages.restore');
+    Route::post('selling-pages/{page}/duplicate', [SellingPageController::class, 'duplicate'])->middleware('permission:selling_pages,create')->name('selling-pages.duplicate');
     Route::post('selling-pages/{page}/publish', [SellingPageController::class, 'publish'])->middleware('permission:selling_pages,publish')->name('selling-pages.publish');
     Route::post('selling-pages/{page}/unpublish', [SellingPageController::class, 'unpublish'])->middleware('permission:selling_pages,publish')->name('selling-pages.unpublish');
     Route::delete('selling-pages/{page}', [SellingPageController::class, 'destroy'])->middleware('permission:selling_pages,delete')->name('selling-pages.destroy');

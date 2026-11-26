@@ -1,17 +1,9 @@
 import { router } from '@inertiajs/react';
 import Add from '@mui/icons-material/Add';
-import ArrowDownward from '@mui/icons-material/ArrowDownward';
-import ArrowUpward from '@mui/icons-material/ArrowUpward';
 import Close from '@mui/icons-material/Close';
-import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
+import DashboardCustomizeOutlined from '@mui/icons-material/DashboardCustomizeOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import ExpandMore from '@mui/icons-material/ExpandMore';
 import OpenInNew from '@mui/icons-material/OpenInNew';
-import VisibilityOffOutlined from '@mui/icons-material/VisibilityOffOutlined';
-import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
@@ -21,7 +13,6 @@ import Chip from '@mui/material/Chip';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Radio from '@mui/material/Radio';
 import Stack from '@mui/material/Stack';
@@ -30,19 +21,9 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import BlockFields, { type FieldDef, type MediaMap, type ReviewOption } from '../../components/BlockFields';
-import ConfirmDialog from '../../components/ConfirmDialog';
+import RouterLink from '../../components/RouterLink';
 import { useCan } from '../../lib/can';
-import type { MediaItem } from '../../lib/types';
 import type { ProductOption } from './Index';
-
-interface Block {
-    id: string;
-    type: string;
-    hidden: boolean;
-    style: { background: string; spacing: string; align: string };
-    data: Record<string, unknown>;
-}
 
 interface OfferItem {
     product_id: number | null;
@@ -61,54 +42,13 @@ interface Offer {
 
 interface Props {
     page: { id: number; name: string; slug: string; productId: number; status: 'draft' | 'published'; publishedAt: string | null; url: string; previewUrl: string; hasUnpublishedChanges: boolean };
-    blocks: Block[];
     offers: Offer[];
-    library: Record<string, { label: string; fields: FieldDef[] }>;
     products: ProductOption[];
-    media: MediaMap;
-    reviews: ReviewOption[];
+    blockCount: number;
     problems: string[];
 }
 
-const newId = () => `b${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
-
-/** Starting content for a new block, taken from the defaults in the block library. */
-function blankData(fields: FieldDef[]): Record<string, unknown> {
-    const blank = (field: FieldDef): unknown => {
-        const preset = (field as FieldDef & { default?: unknown }).default;
-        if (preset !== undefined) return preset;
-        switch (field.type) {
-            case 'toggle':
-                return false;
-            case 'image':
-            case 'video':
-            case 'datetime':
-                return null;
-            case 'images':
-            case 'reviews':
-            case 'strings':
-                return [];
-            case 'list':
-                return Array.from({ length: field.min ?? 1 }, () => Object.fromEntries((field.fields ?? []).map((f) => [f.key, blank(f)])));
-            case 'table':
-                return { columns: ['', ''], rows: [['', '']] };
-            default:
-                return '';
-        }
-    };
-    return Object.fromEntries(fields.map((f) => [f.key, blank(f)]));
-}
-
-const DEFAULT_BG: Record<string, string> = { benefits: 'soft', order: 'soft', offer_bar: 'dark' };
-
-/** A short line that tells blocks of the same type apart in the list. */
-function summarise(block: Block): string {
-    const d = block.data as Record<string, unknown>;
-    const text = [d.headline, d.heading, d.text, d.title].find((v) => typeof v === 'string' && v !== '') as string | undefined;
-    return text ? (text.length > 60 ? `${text.slice(0, 60)}…` : text) : '';
-}
-
-export default function SellingPageEdit({ page, blocks: savedBlocks, offers: savedOffers, library, products, media: savedMedia, reviews, problems }: Props) {
+export default function SellingPageEdit({ page, offers: savedOffers, products, blockCount, problems }: Props) {
     const can = useCan();
     const canEdit = can('selling_pages', 'edit');
     const canPublish = can('selling_pages', 'publish');
@@ -117,21 +57,12 @@ export default function SellingPageEdit({ page, blocks: savedBlocks, offers: sav
     const [slug, setSlug] = useState(page.slug);
     const [productId, setProductId] = useState<number | null>(page.productId);
     const [offers, setOffers] = useState<Offer[]>(savedOffers);
-    const [blocks, setBlocks] = useState<Block[]>(savedBlocks);
-    const [media, setMedia] = useState<MediaMap>(savedMedia);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [dirty, setDirty] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [expanded, setExpanded] = useState<string | null>(null);
-    const [addAnchor, setAddAnchor] = useState<HTMLElement | null>(null);
-    const [removing, setRemoving] = useState<Block | null>(null);
 
-    // After a save the server sends back the cleaned draft; show exactly what was stored.
-    useEffect(() => {
-        setBlocks(savedBlocks);
-        setOffers(savedOffers);
-        setMedia((current) => ({ ...current, ...savedMedia }));
-    }, [savedBlocks, savedOffers, savedMedia]);
+    // After a save the server sends back what it stored; show exactly that.
+    useEffect(() => setOffers(savedOffers), [savedOffers]);
 
     useEffect(() => {
         if (!dirty) return;
@@ -141,34 +72,14 @@ export default function SellingPageEdit({ page, blocks: savedBlocks, offers: sav
     }, [dirty]);
 
     const touch = () => setDirty(true);
-    const changeBlocks = (next: Block[]) => { setBlocks(next); touch(); };
     const changeOffers = (next: Offer[]) => { setOffers(next); touch(); };
-    const patchBlock = (id: string, patch: Partial<Block>) => changeBlocks(blocks.map((b) => (b.id === id ? { ...b, ...patch } : b)));
     const patchOffer = (index: number, patch: Partial<Offer>) => changeOffers(offers.map((o, i) => (i === index ? { ...o, ...patch } : o)));
-
-    const move = (index: number, by: number) => {
-        const next = [...blocks];
-        const [block] = next.splice(index, 1);
-        next.splice(index + by, 0, block);
-        changeBlocks(next);
-    };
-
-    const addBlock = (type: string) => {
-        const block: Block = { id: newId(), type, hidden: false, style: { background: DEFAULT_BG[type] ?? 'white', spacing: 'md', align: 'left' }, data: blankData(library[type].fields) };
-        // New content goes above the order block, which normally closes the page.
-        const orderAt = blocks.findIndex((b) => b.type === 'order');
-        const next = [...blocks];
-        next.splice(type === 'order' || orderAt === -1 ? next.length : orderAt, 0, block);
-        changeBlocks(next);
-        setExpanded(block.id);
-        setAddAnchor(null);
-    };
 
     const save = (then?: () => void) => {
         setSaving(true);
         router.put(
             `/admin/selling-pages/${page.id}`,
-            { name, slug, product_id: productId, blocks, offers } as never,
+            { name, slug, product_id: productId, offers } as never,
             {
                 preserveScroll: true,
                 onSuccess: () => { setErrors({}); setDirty(false); then?.(); },
@@ -184,7 +95,6 @@ export default function SellingPageEdit({ page, blocks: savedBlocks, offers: sav
         else send();
     };
 
-    const hasOrder = blocks.some((b) => b.type === 'order');
     const product = (id: number | null) => products.find((p) => p.id === id) ?? null;
     const firstError = Object.values(errors)[0];
 
@@ -193,12 +103,12 @@ export default function SellingPageEdit({ page, blocks: savedBlocks, offers: sav
             title={page.name}
             actions={
                 <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-                    <Tooltip title={dirty ? 'Save the draft first to preview your latest changes' : ''}>
+                    <Tooltip title={dirty ? 'Save first to preview your latest changes' : ''}>
                         <span>
                             <Button component="a" href={page.previewUrl} target="_blank" rel="noopener" startIcon={<OpenInNew />} disabled={dirty}>Preview</Button>
                         </span>
                     </Tooltip>
-                    {canEdit && <Button variant="outlined" onClick={() => save()} disabled={saving || !dirty}>{dirty ? 'Save draft' : 'Saved'}</Button>}
+                    {canEdit && <Button variant="outlined" onClick={() => save()} disabled={saving || !dirty}>{dirty ? 'Save' : 'Saved'}</Button>}
                     {canPublish && page.status === 'published' && (
                         <Button color="inherit" onClick={() => router.post(`/admin/selling-pages/${page.id}/unpublish`, {}, { preserveScroll: true })}>Unpublish</Button>
                     )}
@@ -318,95 +228,18 @@ export default function SellingPageEdit({ page, blocks: savedBlocks, offers: sav
                 </Card>
 
                 <Card sx={{ p: 3 }}>
-                    <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                        <Typography variant="h4" component="h2">Page content</Typography>
-                        {canEdit && <Button variant="outlined" startIcon={<Add />} onClick={(e) => setAddAnchor(e.currentTarget)} aria-haspopup="menu">Add block</Button>}
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' } }}>
+                        <Box>
+                            <Typography variant="h4" component="h2">Page content</Typography>
+                            <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+                                {blockCount === 1 ? '1 block' : `${blockCount} blocks`} on the page. Arrange blocks, edit text and images, and publish in the builder.
+                            </Typography>
+                        </Box>
+                        <Button variant="contained" component={RouterLink} href={`/admin/selling-pages/${page.id}/builder`} startIcon={<DashboardCustomizeOutlined />} sx={{ flexShrink: 0 }}>Open builder</Button>
                     </Stack>
-                    <Typography sx={{ color: 'text.secondary', mb: 2.5 }}>
-                        Blocks appear on the page in this order. Customers see your changes only after you publish.
-                    </Typography>
-
-                    <Menu anchorEl={addAnchor} open={Boolean(addAnchor)} onClose={() => setAddAnchor(null)}>
-                        {Object.entries(library).map(([type, definition]) => (
-                            <MenuItem key={type} disabled={type === 'order' && hasOrder} onClick={() => addBlock(type)}>
-                                {definition.label}{type === 'order' && hasOrder ? ' (already on the page)' : ''}
-                            </MenuItem>
-                        ))}
-                    </Menu>
-
-                    {blocks.length === 0 && <Typography sx={{ color: 'text.secondary' }}>This page has no blocks yet. Add an Order block first: customers pay in it.</Typography>}
-
-                    {blocks.map((block, index) => {
-                        const definition = library[block.type];
-                        const summary = summarise(block);
-                        return (
-                            <Accordion key={block.id} expanded={expanded === block.id} onChange={(_, open) => setExpanded(open ? block.id : null)} disableGutters variant="outlined" sx={{ mb: 1.5, borderRadius: '12px !important', '&:before': { display: 'none' }, opacity: block.hidden ? 0.65 : 1 }}>
-                                <AccordionSummary expandIcon={<ExpandMore />} aria-controls={`block-${block.id}`} id={`block-${block.id}-header`} component="div">
-                                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', width: '100%', minWidth: 0, pr: 1 }}>
-                                        <Typography sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{definition.label}</Typography>
-                                        {block.hidden && <Chip size="small" label="Hidden" />}
-                                        <Typography noWrap sx={{ color: 'text.secondary', fontSize: 14, flex: 1, minWidth: 0 }}>{summary}</Typography>
-                                        {canEdit && (
-                                            <Stack direction="row" onClick={(e) => e.stopPropagation()} sx={{ flexShrink: 0 }}>
-                                                <Tooltip title="Move up"><span><IconButton aria-label={`Move ${definition.label} up`} disabled={index === 0} onClick={() => move(index, -1)}><ArrowUpward fontSize="small" /></IconButton></span></Tooltip>
-                                                <Tooltip title="Move down"><span><IconButton aria-label={`Move ${definition.label} down`} disabled={index === blocks.length - 1} onClick={() => move(index, 1)}><ArrowDownward fontSize="small" /></IconButton></span></Tooltip>
-                                                <Tooltip title={block.hidden ? 'Show on the page' : 'Hide from the page'}>
-                                                    <IconButton aria-label={block.hidden ? `Show ${definition.label}` : `Hide ${definition.label}`} onClick={() => patchBlock(block.id, { hidden: !block.hidden })}>
-                                                        {block.hidden ? <VisibilityOffOutlined fontSize="small" /> : <VisibilityOutlined fontSize="small" />}
-                                                    </IconButton>
-                                                </Tooltip>
-                                                {block.type !== 'order' && (
-                                                    <Tooltip title="Duplicate">
-                                                        <IconButton aria-label={`Duplicate ${definition.label}`} onClick={() => { const copy = { ...structuredClone(block), id: newId() }; const next = [...blocks]; next.splice(index + 1, 0, copy); changeBlocks(next); }}>
-                                                            <ContentCopyOutlined fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                )}
-                                                <Tooltip title="Delete"><IconButton aria-label={`Delete ${definition.label}`} onClick={() => setRemoving(block)}><DeleteOutlined fontSize="small" /></IconButton></Tooltip>
-                                            </Stack>
-                                        )}
-                                    </Stack>
-                                </AccordionSummary>
-                                <AccordionDetails sx={{ pt: 1, pb: 3 }}>
-                                    <BlockFields
-                                        fields={definition.fields} data={block.data} disabled={!canEdit} media={media} reviews={reviews}
-                                        onMedia={(items: MediaItem[]) => setMedia((current) => ({ ...current, ...Object.fromEntries(items.map((i) => [i.id, i])) }))}
-                                        onChange={(data) => patchBlock(block.id, { data })}
-                                    />
-                                    {block.type === 'order' && <Typography sx={{ color: 'text.secondary', fontSize: 14, mt: 2 }}>The packs shown in this block are set under “Packs” above.</Typography>}
-                                    <Typography sx={{ fontWeight: 600, fontSize: 14, mt: 3, mb: 1.5 }}>Style</Typography>
-                                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                        <TextField select size="small" label="Background" value={block.style.background} disabled={!canEdit} sx={{ minWidth: 160 }} onChange={(e) => patchBlock(block.id, { style: { ...block.style, background: e.target.value } })}>
-                                            <MenuItem value="white">White</MenuItem>
-                                            <MenuItem value="soft">Soft grey</MenuItem>
-                                            <MenuItem value="dark">Dark</MenuItem>
-                                        </TextField>
-                                        <TextField select size="small" label="Spacing" value={block.style.spacing} disabled={!canEdit} sx={{ minWidth: 160 }} onChange={(e) => patchBlock(block.id, { style: { ...block.style, spacing: e.target.value } })}>
-                                            <MenuItem value="sm">Small</MenuItem>
-                                            <MenuItem value="md">Medium</MenuItem>
-                                            <MenuItem value="lg">Large</MenuItem>
-                                        </TextField>
-                                        <TextField select size="small" label="Text alignment" value={block.style.align} disabled={!canEdit} sx={{ minWidth: 160 }} onChange={(e) => patchBlock(block.id, { style: { ...block.style, align: e.target.value } })}>
-                                            <MenuItem value="left">Left</MenuItem>
-                                            <MenuItem value="center">Centre</MenuItem>
-                                        </TextField>
-                                    </Stack>
-                                </AccordionDetails>
-                            </Accordion>
-                        );
-                    })}
                 </Card>
             </Stack>
 
-            <ConfirmDialog
-                open={removing !== null}
-                title={`Delete this ${removing ? library[removing.type].label : ''} block?`}
-                text="Its content is removed from the draft. The live page keeps it until you publish."
-                confirmLabel="Delete block"
-                danger
-                onClose={() => setRemoving(null)}
-                onConfirm={() => { if (removing) changeBlocks(blocks.filter((b) => b.id !== removing.id)); setRemoving(null); }}
-            />
         </AdminLayout>
     );
 }
