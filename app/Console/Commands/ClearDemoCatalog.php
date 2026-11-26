@@ -34,8 +34,10 @@ class ClearDemoCatalog extends Command
         }
 
         Storage::disk('downloads')->deleteDirectory('demo');
-        Category::query()->whereDoesntHave('products')->whereDoesntHave('children')
-            ->whereIn('slug', ['templates', 'e-books', 'presets', 'audio'])->delete();
+        // Ids first, then delete: MySQL cannot delete from a table it is also sub-selecting.
+        $emptyIds = Category::query()->whereDoesntHave('products')->whereDoesntHave('children')
+            ->whereIn('slug', ['templates', 'e-books', 'presets', 'audio'])->pluck('id');
+        Category::query()->whereIn('id', $emptyIds)->delete();
         Tag::query()->where('slug', 'demo')->delete();
 
         $bar = Setting::get('announcement');
