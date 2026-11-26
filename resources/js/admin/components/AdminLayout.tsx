@@ -6,7 +6,12 @@ import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
+import ArticleOutlined from '@mui/icons-material/ArticleOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import EditNoteOutlined from '@mui/icons-material/EditNoteOutlined';
+import HomeOutlined from '@mui/icons-material/HomeOutlined';
+import MailOutlined from '@mui/icons-material/MailOutlined';
+import MenuOpenOutlined from '@mui/icons-material/MenuOpenOutlined';
 import PeopleAltOutlined from '@mui/icons-material/PeopleAltOutlined';
 import StarBorderOutlined from '@mui/icons-material/StarBorderOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
@@ -74,6 +79,16 @@ const NAV: { heading: string; items: NavItem[] }[] = [
             { label: 'Coupons', href: '/admin/coupons', icon: <LocalOfferOutlined />, module: 'coupons', match: (p) => p.startsWith('/admin/coupons') },
             { label: 'Reviews', href: '/admin/reviews', icon: <StarBorderOutlined />, module: 'reviews', match: (p) => p.startsWith('/admin/reviews') },
             { label: 'Live chat', href: '/admin/chat', icon: <ChatBubbleOutlineOutlined />, module: 'chat', match: (p) => p.startsWith('/admin/chat') },
+        ],
+    },
+    {
+        heading: 'Content',
+        items: [
+            { label: 'Home page', href: '/admin/home', icon: <HomeOutlined />, module: 'content', match: (p) => p.startsWith('/admin/home') },
+            { label: 'Pages', href: '/admin/pages', icon: <ArticleOutlined />, module: 'content', match: (p) => p.startsWith('/admin/pages') },
+            { label: 'Blog', href: '/admin/blog', icon: <EditNoteOutlined />, module: 'blog', match: (p) => p.startsWith('/admin/blog') },
+            { label: 'Header and footer', href: '/admin/navigation', icon: <MenuOpenOutlined />, module: 'content', match: (p) => p.startsWith('/admin/navigation') },
+            { label: 'Messages', href: '/admin/messages', icon: <MailOutlined />, module: 'chat', match: (p) => p.startsWith('/admin/messages') },
         ],
     },
     {

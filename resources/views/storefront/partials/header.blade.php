@@ -14,10 +14,24 @@
     <div class="container-store flex h-16 items-center gap-4 lg:h-[72px]">
         <a href="{{ url('/') }}" class="font-heading text-[20px] font-bold tracking-tight">{{ $storeName }}</a>
 
-        @if ($navCategories->isNotEmpty())
-            <nav aria-label="Categories" class="ml-4 hidden items-center gap-1 lg:flex">
-                @foreach ($navCategories as $category)
-                    <a href="{{ url('/c/'.$category->slug) }}" class="nav-link">{{ $category->name }}</a>
+        @if ($navLinks !== [])
+            <nav aria-label="Main" class="ml-4 hidden items-center gap-1 lg:flex">
+                @foreach ($navLinks as $link)
+                    @if ($link['children'] === [])
+                        <a href="{{ $link['url'] }}" class="nav-link">{{ $link['label'] }}</a>
+                    @else
+                        {{-- Opens on hover and on keyboard focus; the parent stays a normal link for touch screens. --}}
+                        <div class="nav-group">
+                            <a href="{{ $link['url'] }}" class="nav-link" aria-haspopup="true">{{ $link['label'] }}
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                            </a>
+                            <div class="nav-sub">
+                                @foreach ($link['children'] as $child)
+                                    <a href="{{ $child['url'] }}">{{ $child['label'] }}</a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 @endforeach
             </nav>
         @endif
@@ -43,15 +57,15 @@
                 </a>
             @endif
 
-            @if ($navCategories->isNotEmpty() || Route::has('search'))
-                <button type="button" class="icon-btn {{ $navCategories->isEmpty() ? 'md:hidden' : 'lg:hidden' }}" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Menu">
+            @if ($navLinks !== [] || Route::has('search'))
+                <button type="button" class="icon-btn {{ $navLinks === [] ? 'md:hidden' : 'lg:hidden' }}" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Menu">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
                 </button>
             @endif
         </div>
     </div>
 
-    @if ($navCategories->isNotEmpty() || Route::has('search'))
+    @if ($navLinks !== [] || Route::has('search'))
         <nav id="mobile-menu" data-menu-panel hidden aria-label="Menu" class="border-t border-line lg:hidden">
             <div class="container-store flex flex-col py-3">
                 @if (Route::has('search'))
@@ -60,8 +74,11 @@
                         <input id="menu-search" type="search" name="q" placeholder="Search products" class="h-12 w-full rounded-full bg-soft px-5 placeholder:text-muted focus:outline-2 focus:outline-accent">
                     </form>
                 @endif
-                @foreach ($navCategories as $category)
-                    <a href="{{ url('/c/'.$category->slug) }}" class="nav-link">{{ $category->name }}</a>
+                @foreach ($navLinks as $link)
+                    <a href="{{ $link['url'] }}" class="nav-link">{{ $link['label'] }}</a>
+                    @foreach ($link['children'] as $child)
+                        <a href="{{ $child['url'] }}" class="nav-link pl-8 text-muted">{{ $child['label'] }}</a>
+                    @endforeach
                 @endforeach
             </div>
         </nav>

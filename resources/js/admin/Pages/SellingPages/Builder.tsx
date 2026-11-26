@@ -60,13 +60,14 @@ interface Version {
 }
 
 interface Props {
-    page: { id: number; name: string; status: 'draft' | 'published'; url: string; previewUrl: string; canvasUrl: string; hasUnpublishedChanges: boolean };
+    page: { id: number; name: string; status: 'draft' | 'published'; url: string; previewUrl: string; canvasUrl: string; hasUnpublishedChanges: boolean; base?: string; backUrl?: string; module?: string };
     blocks: Block[];
     library: Library;
     media: MediaMap;
     reviews: ReviewOption[];
     problems: string[];
-    versions: Version[];
+    /** Null for pages that keep no version history (content pages). */
+    versions: Version[] | null;
 }
 
 type SaveState = 'saved' | 'unsaved' | 'saving' | 'error';
@@ -99,11 +100,12 @@ const DRAG_TYPE = 'application/x-builder-block';
 
 export default function SellingPageBuilder({ page, blocks: savedBlocks, library, media: savedMedia, reviews, problems: savedProblems, versions }: Props) {
     const can = useCan();
-    const canEdit = can('selling_pages', 'edit');
-    const canPublish = can('selling_pages', 'publish');
+    const canEdit = can(page.module ?? 'selling_pages', 'edit');
+    const canPublish = can(page.module ?? 'selling_pages', 'publish');
     const { flash } = usePage<SharedProps>().props;
     const compact = useMediaQuery('(max-width:1099px)');
-    const base = `/admin/selling-pages/${page.id}`;
+    const base = page.base ?? `/admin/selling-pages/${page.id}`;
+    const backUrl = page.backUrl ?? base;
 
     const [blocks, setBlocks] = useState<Block[]>(savedBlocks);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -553,7 +555,7 @@ export default function SellingPageBuilder({ page, blocks: savedBlocks, library,
 
             <Box component="header" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, minHeight: 60, bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider', flexWrap: 'wrap', py: 0.75 }}>
                 <Tooltip title="Back to page settings">
-                    <IconButton aria-label="Back to page settings" component={RouterLink} href={base}><ArrowBack /></IconButton>
+                    <IconButton aria-label={page.backUrl ? 'Back to pages' : 'Back to page settings'} component={RouterLink} href={backUrl}><ArrowBack /></IconButton>
                 </Tooltip>
                 <Box sx={{ minWidth: 0, mr: 1 }}>
                     <Typography component="h1" noWrap sx={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, fontSize: 17, maxWidth: { xs: 140, md: 260 } }}>{page.name}</Typography>
@@ -592,7 +594,7 @@ export default function SellingPageBuilder({ page, blocks: savedBlocks, library,
 
                 <Box sx={{ flex: 1 }} />
 
-                <Tooltip title="Published versions"><IconButton aria-label="Published versions" onClick={() => setVersionsOpen(true)}><History /></IconButton></Tooltip>
+                {versions && <Tooltip title="Published versions"><IconButton aria-label="Published versions" onClick={() => setVersionsOpen(true)}><History /></IconButton></Tooltip>}
                 {compact && <Tooltip title="Block settings"><IconButton aria-label="Block settings" onClick={() => setPanelOpen(true)}><Tune /></IconButton></Tooltip>}
                 <Button startIcon={<OpenInNew />} onClick={preview}>Preview</Button>
                 {canPublish && (
@@ -649,7 +651,7 @@ export default function SellingPageBuilder({ page, blocks: savedBlocks, library,
             <Dialog open={versionsOpen} onClose={() => setVersionsOpen(false)} fullWidth maxWidth="sm">
                 <DialogTitle>Published versions</DialogTitle>
                 <DialogContent>
-                    {versions.length === 0 ? (
+                    {!versions || versions.length === 0 ? (
                         <Typography sx={{ color: 'text.secondary' }}>This page has not been published yet. Each time you publish, that version is kept here, up to the last ten.</Typography>
                     ) : (
                         <>

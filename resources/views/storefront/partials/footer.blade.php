@@ -8,16 +8,14 @@
         </div>
 
         @foreach ($footerMenus as $menu)
-            @if ($menu->items->isNotEmpty())
-                <nav aria-label="{{ $menu->name }}">
-                    <p class="text-label font-semibold uppercase tracking-wide text-muted">{{ $menu->name }}</p>
-                    <ul class="mt-3 space-y-1">
-                        @foreach ($menu->items as $item)
-                            <li><a href="{{ $item->url }}" class="inline-flex min-h-11 items-center hover:underline">{{ $item->label }}</a></li>
-                        @endforeach
-                    </ul>
-                </nav>
-            @endif
+            <nav aria-label="{{ $menu['name'] }}">
+                <p class="text-label font-semibold uppercase tracking-wide text-muted">{{ $menu['name'] }}</p>
+                <ul class="mt-3 space-y-1">
+                    @foreach ($menu['items'] as $item)
+                        <li><a href="{{ $item['url'] }}" class="inline-flex min-h-11 items-center hover:underline">{{ $item['label'] }}</a></li>
+                    @endforeach
+                </ul>
+            </nav>
         @endforeach
     </div>
     <div class="border-t border-line">

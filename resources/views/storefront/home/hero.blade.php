@@ -4,15 +4,15 @@
             @if (! empty($s['eyebrow']))
                 <span class="badge">{{ $s['eyebrow'] }}</span>
             @endif
-            <h1 class="page-headline mt-5 max-w-xl">{{ $s['headline'] }}</h1>
+            <{{ ($first ?? true) ? 'h1' : 'h2' }} class="page-headline mt-5 max-w-xl">{{ $s['headline'] ?: $storeName }}</{{ ($first ?? true) ? 'h1' : 'h2' }}>
             @if (! empty($s['text']))
                 <p class="mt-5 max-w-md text-[17px] text-muted">{{ $s['text'] }}</p>
             @endif
             <div class="mt-8 flex flex-wrap gap-3">
-                @if (! empty($s['primary_label']))
+                @if (! empty($s['primary_label']) && ! empty($s['primary_url']))
                     <a href="{{ url($s['primary_url']) }}" class="btn btn-primary">{{ $s['primary_label'] }} @include('storefront.partials.icon', ['name' => 'arrow', 'size' => 18])</a>
                 @endif
-                @if (! empty($s['secondary_label']))
+                @if (! empty($s['secondary_label']) && ! empty($s['secondary_url']))
                     <a href="{{ url($s['secondary_url']) }}" class="btn btn-secondary">{{ $s['secondary_label'] }}</a>
                 @endif
             </div>

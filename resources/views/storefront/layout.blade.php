@@ -8,7 +8,12 @@
     @hasSection('description')
         <meta name="description" content="@yield('description')">
     @endif
-    @vite(['resources/css/app.css', 'resources/js/storefront/app.ts'])
+    @if ($builder ?? false)
+        {{-- The page builder's canvas: the same page and theme, with the editing script instead of the shop's. --}}
+        @vite(['resources/css/app.css', 'resources/css/builder-canvas.css', 'resources/js/admin/builder-canvas.ts'])
+    @else
+        @vite(['resources/css/app.css', 'resources/js/storefront/app.ts'])
+    @endif
     @stack('head')
 </head>
 <body class="flex min-h-screen flex-col bg-surface text-ink">
@@ -40,7 +45,9 @@
             <div class="drawer-body" data-cart-root aria-live="polite"></div>
         </aside>
     </div>
-    @include('storefront.partials.chat')
+    @unless ($builder ?? false)
+        @include('storefront.partials.chat')
+    @endunless
 
     @stack('end')
 </body>

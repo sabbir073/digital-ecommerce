@@ -3,13 +3,18 @@
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ChatController;
+use App\Http\Controllers\Admin\ContentPageController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\HomePageController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\ProductController;
@@ -147,6 +152,36 @@ Route::middleware('admin.auth')->group(function () {
     Route::post('coupons', [CouponController::class, 'store'])->middleware('permission:coupons,create')->name('coupons.store');
     Route::put('coupons/{coupon}', [CouponController::class, 'update'])->middleware('permission:coupons,edit')->name('coupons.update');
     Route::delete('coupons/{coupon}', [CouponController::class, 'destroy'])->middleware('permission:coupons,delete')->name('coupons.destroy');
+
+    // Content: home page, pages, navigation, blog, contact messages
+    Route::get('home', [HomePageController::class, 'edit'])->middleware('permission:content,view')->name('home.edit');
+    Route::put('home', [HomePageController::class, 'update'])->middleware('permission:content,edit')->name('home.update');
+
+    Route::get('pages', [ContentPageController::class, 'index'])->middleware('permission:content,view')->name('pages.index');
+    Route::post('pages', [ContentPageController::class, 'store'])->middleware('permission:content,create')->name('pages.store');
+    Route::put('pages/{page}', [ContentPageController::class, 'update'])->middleware('permission:content,edit')->name('pages.update');
+    Route::get('pages/{page}/builder', [ContentPageController::class, 'builder'])->middleware('permission:content,view')->name('pages.builder');
+    Route::get('pages/{page}/canvas', [ContentPageController::class, 'canvas'])->middleware('permission:content,view')->name('pages.canvas');
+    Route::post('pages/{page}/render', [ContentPageController::class, 'render'])->middleware('permission:content,view')->name('pages.render');
+    Route::put('pages/{page}/draft', [ContentPageController::class, 'saveDraft'])->middleware('permission:content,edit')->name('pages.draft');
+    Route::post('pages/{page}/publish', [ContentPageController::class, 'publish'])->middleware('permission:content,publish')->name('pages.publish');
+    Route::post('pages/{page}/unpublish', [ContentPageController::class, 'unpublish'])->middleware('permission:content,publish')->name('pages.unpublish');
+    Route::delete('pages/{page}', [ContentPageController::class, 'destroy'])->middleware('permission:content,delete')->name('pages.destroy');
+
+    Route::get('navigation', [MenuController::class, 'index'])->middleware('permission:content,view')->name('navigation.index');
+    Route::put('navigation/announcement', [MenuController::class, 'saveAnnouncement'])->middleware('permission:content,edit')->name('navigation.announcement');
+    Route::put('navigation/{location}', [MenuController::class, 'update'])->middleware('permission:content,edit')->name('navigation.update');
+
+    Route::get('blog', [BlogController::class, 'index'])->middleware('permission:blog,view')->name('blog.index');
+    Route::get('blog/create', [BlogController::class, 'create'])->middleware('permission:blog,create')->name('blog.create');
+    Route::post('blog', [BlogController::class, 'store'])->middleware('permission:blog,create')->name('blog.store');
+    Route::get('blog/{post}', [BlogController::class, 'edit'])->middleware('permission:blog,view')->name('blog.edit');
+    Route::put('blog/{post}', [BlogController::class, 'update'])->middleware('permission:blog,edit')->name('blog.update');
+    Route::delete('blog/{post}', [BlogController::class, 'destroy'])->middleware('permission:blog,delete')->name('blog.destroy');
+
+    Route::get('messages', [MessageController::class, 'index'])->middleware('permission:chat,view')->name('messages.index');
+    Route::put('messages/{message}', [MessageController::class, 'update'])->middleware('permission:chat,edit')->name('messages.update');
+    Route::delete('messages/{message}', [MessageController::class, 'destroy'])->middleware('permission:chat,delete')->name('messages.destroy');
 
     // Payment settings (Stripe keys are Super Admin only, enforced in the controller)
     Route::get('settings/payments', [PaymentSettingsController::class, 'edit'])->middleware('permission:settings,view')->name('settings.payments');
