@@ -71,13 +71,28 @@ class CheckoutService
      */
     public function start(Cart $cart, array $customer, array $context = []): array
     {
-        $summary = $this->carts->summary($cart);
+        return $this->place($this->carts->summary($cart), $customer, ['cart_id' => $cart->id] + $context);
+    }
+
+    /**
+     * Create (or continue) the unpaid order for a priced set of lines. The cart flow and the
+     * selling page both end up here.
+     *
+     * @param  array{email:string, name:?string, country:string, postcode:?string}  $customer
+     * @param  array{source?:string, cart_id?:?int, checkout_key?:?string, selling_page_id?:?int, offer_id?:?int, user_id?:?int, ip?:?string}  $context
+     * @return array{order: Order, client_secret: ?string, paid: bool}
+     *
+     * @throws CheckoutException
+     */
+    public function place(CartSummary $summary, array $customer, array $context = []): array
+    {
+        $fromCart = ($context['source'] ?? 'cart') === 'cart';
         if ($summary->isEmpty()) {
-            throw new CheckoutException('Your cart is empty.');
+            throw new CheckoutException($fromCart ? 'Your cart is empty.' : 'Choose a pack to continue.');
         }
         foreach ($summary->lines as $line) {
             if ($line->issue !== null) {
-                throw new CheckoutException("{$line->name}: {$line->issue}. Update your cart to continue.", 'stock');
+                throw new CheckoutException("{$line->name}: {$line->issue}.".($fromCart ? ' Update your cart to continue.' : ''), 'stock');
             }
         }
         if ($summary->totalCents() > 0 && ! $this->gateway->isConfigured()) {
@@ -86,9 +101,15 @@ class CheckoutService
 
         $quote = $this->quote($summary, $customer['country'], $customer['postcode']);
         $fingerprint = $this->fingerprint($summary, $customer, $quote['total']);
+        $cartId = $context['cart_id'] ?? null;
+        $checkoutKey = $context['checkout_key'] ?? null;
 
         // Pressing Pay again (double click, retry after a declined card) continues the same order.
-        $previous = Order::query()->where('cart_id', $cart->id)->whereIn('status', [Order::PENDING, Order::FAILED])->latest('id')->first();
+        $previous = ($cartId || $checkoutKey)
+            ? Order::query()
+                ->when($cartId, fn ($q) => $q->where('cart_id', $cartId), fn ($q) => $q->where('checkout_key', $checkoutKey))
+                ->whereIn('status', [Order::PENDING, Order::FAILED])->latest('id')->first()
+            : null;
         if ($previous) {
             $resumed = $previous->fingerprint === $fingerprint ? $this->resume($previous) : null;
             if ($resumed) {
@@ -97,11 +118,12 @@ class CheckoutService
             $this->fulfillment->cancel($previous, 'Replaced by a new checkout attempt');
         }
 
-        $order = DB::transaction(function () use ($cart, $summary, $customer, $context, $quote, $fingerprint) {
+        $order = DB::transaction(function () use ($cartId, $checkoutKey, $summary, $customer, $context, $quote, $fingerprint) {
             $order = Order::create([
                 'number' => $this->newNumber(),
                 'user_id' => $context['user_id'] ?? null,
-                'cart_id' => $cart->id,
+                'cart_id' => $cartId,
+                'checkout_key' => $checkoutKey,
                 'fingerprint' => $fingerprint,
                 'email' => Str::lower($customer['email']),
                 'name' => $customer['name'] ?: null,
@@ -124,11 +146,11 @@ class CheckoutService
 
             foreach ($summary->lines as $line) {
                 $order->items()->create([
-                    'product_id' => $line->product->id,
+                    'product_id' => $line->product?->id,
                     'variant_id' => $line->variant?->id,
                     'name' => $line->name,
                     'variant_label' => $line->variantLabel,
-                    'sku' => $line->variant?->sku ?: $line->product->sku,
+                    'sku' => $line->variant?->sku ?: $line->product?->sku,
                     'unit_price_cents' => $line->unitCents,
                     'quantity' => $line->quantity,
                     'line_total_cents' => $line->lineTotalCents,

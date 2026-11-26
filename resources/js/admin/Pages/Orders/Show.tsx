@@ -29,6 +29,7 @@ interface Order {
     status: string;
     statusLabel: string;
     source: string;
+    sellingPage: { id: number; name: string; deleted: boolean } | null;
     country: string | null;
     postcode: string | null;
     couponCode: string | null;
@@ -85,7 +86,7 @@ export default function OrderShow({ order }: { order: Order }) {
             <Stack spacing={1} direction="row" sx={{ mb: 3, alignItems: 'center', flexWrap: 'wrap' }}>
                 <Chip variant="outlined" label={order.statusLabel} color={STATUS_COLOR[order.status] ?? 'default'} />
                 <Typography sx={{ color: 'text.secondary' }}>
-                    Placed {formatDateTime(order.createdAt)} from the {order.source === 'selling_page' ? 'selling page' : 'cart'}
+                    Placed {formatDateTime(order.createdAt)} from {order.source === 'selling_page' ? (order.sellingPage ? `the selling page “${order.sellingPage.name}”${order.sellingPage.deleted ? ' (deleted)' : ''}` : 'a selling page') : 'the cart'}
                     {order.paidAt ? ` · paid ${formatDateTime(order.paidAt)}` : ''}
                 </Typography>
             </Stack>

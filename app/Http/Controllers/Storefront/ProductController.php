@@ -37,6 +37,7 @@ class ProductController extends Controller
             'product' => $product,
             'gallery' => $gallery,
             'related' => $related,
+            'sellingPage' => $product->sellingPages()->published()->latest('published_at')->first(),
             'state' => $this->state($product),
             'deliveryText' => Setting::get('product.delivery_text', 'This is a digital product. Your download link is shown right after payment and sent to your email.'),
             'returnsText' => Setting::get('product.returns_text'),

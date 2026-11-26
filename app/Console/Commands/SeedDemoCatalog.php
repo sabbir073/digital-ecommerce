@@ -6,9 +6,11 @@ use App\Models\Category;
 use App\Models\DigitalAsset;
 use App\Models\Media;
 use App\Models\Product;
+use App\Models\SellingPage;
 use App\Models\Setting;
 use App\Services\MediaService;
 use App\Services\ProductWriter;
+use App\Support\Blocks;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -91,6 +93,8 @@ class SeedDemoCatalog extends Command
             }
         }
 
+        $this->sellingPage();
+
         if (Setting::get('announcement') === null) {
             Setting::put('announcement', ['enabled' => true, 'text' => 'Demo store: these are sample products and cannot be bought.', 'demo' => true]);
         }
@@ -99,6 +103,67 @@ class SeedDemoCatalog extends Command
         $this->info('Demo catalog added.'.($missing ? " {$missing} stock photos could not be downloaded; add images in Admin > Media library." : ''));
 
         return self::SUCCESS;
+    }
+
+    /** One published sample selling page, so the one-page checkout can be tried straight away. */
+    private function sellingPage(): void
+    {
+        $deck = Product::query()->where('sku', 'DEMO-PITCH-DECK-TEMPL')->with('images')->first()
+            ?? Product::query()->where('sku', 'like', 'DEMO-%')->where('name', 'Pitch Deck Template')->with('images')->first();
+        $kit = Product::query()->where('sku', 'like', 'DEMO-%')->where('name', 'Invoice and Proposal Kit')->first();
+        if (! $deck || SellingPage::withTrashed()->where('slug', 'demo-pitch-deck')->exists()) {
+            return;
+        }
+
+        $blocks = [
+            Blocks::make('offer_bar', ['text' => 'Demo page: sample content for trying the one-page checkout.']),
+            Blocks::make('hero', [
+                'badge' => 'Sample selling page',
+                'headline' => 'A pitch deck that is ready before your coffee is.',
+                'subline' => 'Thirty editable slides with a clear story: problem, solution, market, traction and ask.',
+                'show_price' => true,
+                'button_label' => 'Order now',
+                'note' => 'Secure card payment by Stripe · Instant download',
+                'image_id' => $deck->images->first()?->id,
+            ]),
+            Blocks::make('benefits', ['items' => [
+                ['title' => 'Thirty slides', 'text' => 'Every slide an investor expects, in the order they expect it.'],
+                ['title' => 'Edit in minutes', 'text' => 'Change colours and fonts once and every slide follows.'],
+                ['title' => 'Works everywhere', 'text' => 'Files for PowerPoint, Keynote and Google Slides.'],
+            ]]),
+            Blocks::make('image_text', [
+                'image_id' => $deck->images->get(1)?->id ?? $deck->images->first()?->id,
+                'heading' => 'Built around the story, not the decoration.',
+                'text' => 'Each section opens with one sentence that says what the audience should remember. You fill in your numbers and keep the structure.',
+                'bullets' => ['Charts you can paste data into', 'Speaker notes on every slide', 'Light and dark versions'],
+                'image_side' => 'left',
+            ]),
+            Blocks::make('faq', ['heading' => 'Questions', 'items' => [
+                ['q' => 'How do I get my files?', 'a' => 'Right after payment you get a download link on this page and by email.'],
+                ['q' => 'Is payment secure?', 'a' => 'Yes. Card details go straight to Stripe and never touch our servers.'],
+                ['q' => 'Is this a real product?', 'a' => 'No. This is sample content that comes with the demo catalog. Remove it with "php artisan demo:clear".'],
+            ]]),
+            Blocks::make('order'),
+        ];
+
+        $page = SellingPage::create([
+            'name' => 'Demo: Pitch Deck launch',
+            'slug' => 'demo-pitch-deck',
+            'product_id' => $deck->id,
+            'status' => SellingPage::PUBLISHED,
+            'draft_blocks' => $blocks,
+            'published_blocks' => $blocks,
+            'published_at' => now(),
+        ]);
+
+        $single = $page->offers()->create(['label' => 'Pitch Deck Template', 'price_cents' => 2900, 'note' => 'The deck on its own', 'is_default' => ! $kit, 'position' => 0]);
+        $single->items()->create(['product_id' => $deck->id, 'quantity' => 1]);
+        if ($kit) {
+            $bundle = $page->offers()->create(['label' => 'Founder bundle', 'price_cents' => 3900, 'note' => 'Most popular · deck plus invoice and proposal kit', 'is_default' => true, 'position' => 1]);
+            $bundle->items()->create(['product_id' => $deck->id, 'quantity' => 1, 'position' => 0]);
+            $bundle->items()->create(['product_id' => $kit->id, 'quantity' => 1, 'position' => 1]);
+        }
+        $this->line('  added the sample selling page /p/demo-pitch-deck');
     }
 
     /**

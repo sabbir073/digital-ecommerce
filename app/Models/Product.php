@@ -56,6 +56,11 @@ class Product extends Model
         return $this->hasMany(DigitalAsset::class);
     }
 
+    public function sellingPages(): HasMany
+    {
+        return $this->hasMany(SellingPage::class);
+    }
+
     public function seo(): MorphOne
     {
         return $this->morphOne(SeoMeta::class, 'seoable');

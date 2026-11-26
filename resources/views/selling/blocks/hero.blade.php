@@ -1,0 +1,44 @@
+@php
+    use App\Support\Money;
+    use App\Support\VideoEmbed;
+    $image = $media[$d['image_id']] ?? null;
+    $video = VideoEmbed::resolve($d['video_url']);
+    $offer = collect($offers)->firstWhere('default', true) ?? ($offers[0] ?? null);
+    $price = $offer['price'] ?? $product->price_cents;
+    $compare = $product->compare_at_cents;
+@endphp
+@include('selling.blocks._open')
+    <div class="container-selling grid items-center gap-10 md:grid-cols-2" data-hero>
+        <div class="sp-stack {{ $d['image_side'] === 'left' ? 'md:order-2' : '' }}">
+            @if ($d['badge'])
+                <span class="badge">{{ $d['badge'] }}</span>
+            @endif
+            <h1 class="sp-headline">{{ $d['headline'] ?: $product->name }}</h1>
+            @if ($d['subline'])
+                <p class="sp-lead">{{ $d['subline'] }}</p>
+            @endif
+            @if ($d['show_price'])
+                <p class="flex items-baseline gap-3">
+                    <span class="text-[32px] font-semibold">{{ Money::format($price) }}</span>
+                    @if ($compare && $compare > $price)
+                        <s class="text-[18px] sp-muted">{{ Money::format($compare) }}</s>
+                    @endif
+                </p>
+            @endif
+            @if ($hasOrder)
+                <a href="#order" class="btn btn-accent btn-pay px-9 text-[17px]" data-order-link>{{ $d['button_label'] ?: 'Order now' }}</a>
+            @endif
+            @if ($d['note'])
+                <p class="text-label sp-muted">{{ $d['note'] }}</p>
+            @endif
+        </div>
+        <div class="min-w-0">
+            @if ($video)
+                @include('selling.blocks._player', ['video' => $video, 'poster' => $image, 'title' => $d['headline'], 'eager' => true])
+            @elseif ($image)
+                <img src="{{ $image->sizeUrl(960) }}" srcset="{{ $image->srcset() }}" sizes="(min-width: 768px) 536px, 100vw" alt="{{ $image->alt ?: ($d['headline'] ?: $product->name) }}"
+                     width="{{ $image->width }}" height="{{ $image->height }}" fetchpriority="high" class="sp-media">
+            @endif
+        </div>
+    </div>
+</section>
