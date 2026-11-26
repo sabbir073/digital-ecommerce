@@ -39,7 +39,8 @@ class ActivityLogTest extends AdminTestCase
         $roleChange = ActivityLog::where('action', 'role_change')->first();
         $this->assertSame($super->id, $roleChange->admin_user_id);
         $this->assertSame($super->name, $roleChange->actor_name);
-        $this->assertSame(['from' => 'Staff', 'to' => 'Moderator'], $roleChange->changes['role']);
+        // MySQL JSON columns do not keep key order, so compare without order.
+        $this->assertEquals(['from' => 'Staff', 'to' => 'Moderator'], $roleChange->changes['role']);
         $this->assertNotNull($roleChange->ip);
         $this->assertNotNull($roleChange->created_at);
     }
