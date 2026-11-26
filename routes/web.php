@@ -7,6 +7,7 @@ use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\OrderController;
 use App\Http\Controllers\Storefront\ProductController;
+use App\Http\Controllers\Storefront\SellingPageController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,13 @@ Route::post('/checkout/start', [CheckoutController::class, 'start'])->middleware
 Route::get('/order/{number}', [OrderController::class, 'show'])->middleware('signed')->name('order.show');
 Route::get('/order/{number}/status', [OrderController::class, 'status'])->middleware('signed')->name('order.status');
 Route::get('/download/{token}', [OrderController::class, 'download'])->middleware('throttle:download')->name('download');
+
+// One-page selling pages: read about one product and pay on the same page
+Route::get('/p/{slug}', [SellingPageController::class, 'show'])->name('selling-page');
+Route::post('/p/{slug}/quote', [SellingPageController::class, 'quote'])->middleware('throttle:quote')->name('selling-page.quote');
+Route::post('/p/{slug}/coupon', [SellingPageController::class, 'applyCoupon'])->middleware('throttle:coupon')->name('selling-page.coupon');
+Route::post('/p/{slug}/start', [SellingPageController::class, 'start'])->middleware('throttle:checkout')->name('selling-page.start');
+Route::get('/p/{slug}/order/{number}', [SellingPageController::class, 'confirmation'])->middleware('signed')->name('selling-page.confirmation');
 
 // Stripe calls this; it is verified by signature, not by a session.
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\HomeSection;
 use App\Models\Media;
 use App\Models\Product;
+use App\Models\SellingPage;
 use App\Models\Setting;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -20,6 +21,9 @@ class HomeController extends Controller
                 'hero' => ['tiles' => $this->heroTiles($section['settings']['media_ids'] ?? [])],
                 'categories' => ['categories' => Category::query()->whereNull('parent_id')->with('image')->orderBy('position')->orderBy('name')->get()],
                 'best_sellers' => ['products' => $this->bestSellers($section['settings']['product_ids'] ?? [])],
+                'featured_offer' => ['page' => ($section['settings']['selling_page_id'] ?? null)
+                    ? SellingPage::query()->published()->with('product.images')->find($section['settings']['selling_page_id'])
+                    : null],
                 default => [],
             };
 

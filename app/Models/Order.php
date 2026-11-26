@@ -32,7 +32,7 @@ class Order extends Model
     ];
 
     protected $fillable = [
-        'number', 'user_id', 'cart_id', 'fingerprint', 'email', 'name', 'status', 'source', 'selling_page_id', 'offer_id', 'coupon_id', 'coupon_code',
+        'number', 'user_id', 'cart_id', 'checkout_key', 'fingerprint', 'email', 'name', 'status', 'source', 'selling_page_id', 'offer_id', 'coupon_id', 'coupon_code',
         'subtotal_cents', 'discount_cents', 'tax_cents', 'total_cents', 'refunded_cents', 'currency', 'billing_country',
         'billing_postcode', 'stripe_tax_calculation_id', 'stripe_tax_transaction_id', 'notes', 'ip', 'paid_at',
     ];
@@ -65,6 +65,11 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function sellingPage(): BelongsTo
+    {
+        return $this->belongsTo(SellingPage::class)->withTrashed();
     }
 
     public function coupon(): BelongsTo

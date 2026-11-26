@@ -5,7 +5,7 @@ Built with Laravel 13, React, Tailwind CSS, Material UI (admin) and MySQL.
 
 The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains **Phase 1: Foundation**.
 
-## What works today (Phases 1 to 3)
+## What works today (Phases 1 to 4)
 
 - Design tokens from PRD section 8, shared by the storefront (Tailwind) and the admin panel (Material UI theme).
 - Shared storefront header and footer, with the announcement bar and category navigation read from the database.
@@ -23,6 +23,10 @@ The product requirements and the approved build plan live in the project documen
 - Customer accounts: sign up, sign in, password reset, order history with downloads.
 - Admin: orders list and detail, coupons, and Settings > Payments (Stripe keys for Super Admins only, stored encrypted; Stripe Tax and overselling switches).
 
+- Selling pages at `/p/<slug>`: one product on one address with no store navigation, built from twelve block types (hero, benefits, image and text, gallery, video, reviews, FAQ, offer bar with countdown, table, rich text, trust row, order block). The customer picks a pack and pays on the page; the order block is replaced by the confirmation and download links.
+- Packs: one to four per page. A pack is a bundle of products and variants at one fixed price and shows "Sold out" when any item in it is out of stock.
+- Admin > Selling pages: create from the starter template or blank, edit packs and block content, preview the draft, publish (blocked until there is exactly one order block and no `[PLACEHOLDER]` text), unpublish, delete. Views, orders and conversion rate per page.
+
 ## Local setup
 
 Requirements: PHP 8.3+, Composer, Node 22+, MySQL 8 (or MariaDB 10.6+).
@@ -35,7 +39,7 @@ php artisan key:generate
 php artisan migrate --seed  # creates the tables and the built-in roles
 php artisan admin:create-super
 php artisan storage:link    # makes uploaded images reachable
-php artisan demo:seed       # optional: a labelled sample catalog (refused on production; undo with demo:clear)
+php artisan demo:seed       # optional: a labelled sample catalog and one sample selling page at /p/demo-pitch-deck (refused on production; undo with demo:clear)
 npm run dev                 # or: npm run build
 php artisan serve
 ```

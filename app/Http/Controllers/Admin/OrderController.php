@@ -61,6 +61,7 @@ class OrderController extends Controller
                 'status' => $order->status,
                 'statusLabel' => $order->statusLabel(),
                 'source' => $order->source,
+                'sellingPage' => $order->sellingPage ? ['id' => $order->sellingPage->id, 'name' => $order->sellingPage->name, 'deleted' => $order->sellingPage->trashed()] : null,
                 'country' => $order->billing_country ? (config('countries')[$order->billing_country] ?? $order->billing_country) : null,
                 'postcode' => $order->billing_postcode,
                 'couponCode' => $order->coupon_code,

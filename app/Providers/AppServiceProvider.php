@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        View::composer('storefront.*', StorefrontComposer::class);
+        View::composer(['storefront.*', 'selling.*'], StorefrontComposer::class);
 
         // Each limit has its own counter. (Plain "throttle:10,1" shares one counter
         // per visitor across every route, so adding to the cart would eat into coupon attempts.)

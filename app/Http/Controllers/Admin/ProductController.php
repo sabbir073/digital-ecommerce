@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\DigitalAsset;
 use App\Models\Product;
+use App\Models\SellingPage;
 use App\Models\Variant;
 use App\Services\ActivityLogger;
 use App\Services\ProductWriter;
@@ -210,6 +211,16 @@ class ProductController extends Controller
     public function destroy(Product $product): RedirectResponse
     {
         $name = $product->name;
+
+        // A product that a selling page sells, or that sits in one of its packs, cannot disappear under it.
+        $pages = SellingPage::query()
+            ->where(fn ($q) => $q->where('product_id', $product->id)->orWhereHas('offers.items', fn ($i) => $i->where('product_id', $product->id)))
+            ->pluck('name');
+        if ($pages->isNotEmpty()) {
+            return back()->with('error', "{$name} is used by the selling page “{$pages->first()}”".($pages->count() > 1 ? ' and '.($pages->count() - 1).' more' : '').'. Delete or change the page first, or archive the product instead.');
+        }
+        SellingPage::onlyTrashed()->where('product_id', $product->id)->forceDelete();
+
         foreach ($product->digitalAssets as $asset) {
             Storage::disk($asset->disk)->delete($asset->path);
         }

@@ -921,3 +921,285 @@
         transform: none;
     }
 }
+
+/* One-page selling pages (PRD sections 4 and 5). Block styling stays within the theme. */
+@layer components {
+    .sp-section {
+        --sp-muted: var(--color-muted);
+        --sp-line: var(--color-line);
+        --sp-card: var(--color-surface);
+        scroll-margin-top: 16px;
+    }
+
+    .sp-bg-white { background: var(--color-surface); --sp-card: var(--color-soft); }
+    .sp-bg-soft { background: var(--color-soft); }
+    .sp-bg-dark {
+        background: var(--color-ink);
+        color: #fff;
+        --sp-muted: #C4C8D0;
+        --sp-line: #343842;
+        --sp-card: #1D2027;
+    }
+
+    .sp-pad-sm { padding-block: 32px; }
+    .sp-pad-md { padding-block: 48px; }
+    .sp-pad-lg { padding-block: 64px; }
+
+    @media (min-width: 1024px) {
+        .sp-pad-md { padding-block: 56px; }
+        .sp-pad-lg { padding-block: 88px; }
+    }
+
+    .sp-center { text-align: center; }
+    .sp-muted { color: var(--sp-muted); }
+    .sp-line { border-color: var(--sp-line); }
+
+    .sp-stack {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+    }
+
+    .sp-center .sp-stack { align-items: center; }
+
+    .sp-headline {
+        font-size: clamp(34px, 5vw, 56px);
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+    }
+
+    .sp-lead {
+        font-size: 17px;
+        color: var(--sp-muted);
+    }
+
+    .sp-media {
+        width: 100%;
+        height: auto;
+        max-height: 480px;
+        border-radius: var(--radius-panel-lg);
+        background: var(--color-soft);
+        object-fit: cover;
+    }
+
+    .sp-media-square {
+        aspect-ratio: 1;
+        max-height: none;
+        border-radius: var(--radius-card);
+    }
+
+    .sp-cards,
+    .sp-trust {
+        display: grid;
+        gap: 20px;
+    }
+
+    @media (min-width: 640px) {
+        .sp-cards, .sp-trust { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (min-width: 1024px) {
+        .sp-cards, .sp-trust { grid-template-columns: repeat(var(--sp-cols, 3), minmax(0, 1fr)); }
+    }
+
+    .sp-card {
+        border-radius: var(--radius-card);
+        background: var(--sp-card);
+        padding: 24px;
+    }
+
+    .sp-bg-dark .text-accent { color: #9DB5FF; }
+
+    .sp-gallery {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    @media (min-width: 1024px) {
+        .sp-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    }
+
+    .sp-slider {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 8px;
+        overscroll-behavior-x: contain;
+    }
+
+    .sp-slider > li {
+        flex: 0 0 min(80%, 350px);
+        scroll-snap-align: start;
+    }
+
+    .sp-video {
+        position: relative;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border-radius: var(--radius-panel-lg);
+        background: var(--color-ink);
+    }
+
+    .sp-video iframe,
+    .sp-video video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    .sp-video-play {
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        display: flex;
+        width: 76px;
+        height: 76px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: #fff;
+        color: var(--color-ink);
+        box-shadow: 0 8px 28px rgb(17 19 23 / 0.28);
+        transition: transform 180ms ease;
+    }
+
+    .sp-video-play:hover { transform: scale(1.06); }
+
+    .sp-faq {
+        border-bottom: 1px solid var(--sp-line);
+        padding-block: 4px;
+    }
+
+    .sp-faq summary {
+        display: flex;
+        min-height: 52px;
+        cursor: pointer;
+        list-style: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        font-weight: 600;
+    }
+
+    .sp-faq summary::-webkit-details-marker { display: none; }
+    .sp-faq > p { padding-bottom: 14px; }
+    .sp-faq-icon { flex-shrink: 0; transition: transform 200ms ease; }
+    .sp-faq[open] .sp-faq-icon { transform: rotate(180deg); }
+
+    .sp-offerbar { font-size: 15px; }
+
+    .sp-table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--sp-line);
+        border-radius: var(--radius-card);
+    }
+
+    .sp-table {
+        width: 100%;
+        min-width: 480px;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .sp-table th,
+    .sp-table td {
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--sp-line);
+        vertical-align: top;
+    }
+
+    .sp-table thead th { font-family: var(--font-heading); font-weight: 600; background: var(--sp-card); }
+    .sp-table tbody th { font-weight: 600; }
+    .sp-table tbody tr:last-child > * { border-bottom: 0; }
+    .sp-table td { color: var(--sp-muted); }
+
+    .sp-prose { max-width: 712px; }
+    .sp-prose > * + * { margin-top: 14px; }
+    .sp-prose h2 { font-size: 28px; margin-top: 28px; }
+    .sp-prose h3 { font-size: 22px; margin-top: 24px; }
+    .sp-prose h4 { font-size: 18px; }
+    .sp-prose p, .sp-prose li { color: var(--sp-muted); }
+    .sp-prose ul { list-style: disc; padding-left: 22px; }
+    .sp-prose ol { list-style: decimal; padding-left: 22px; }
+    .sp-prose li + li { margin-top: 6px; }
+    .sp-prose a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
+    .sp-bg-dark .sp-prose a { color: #9DB5FF; }
+    .sp-prose blockquote { border-left: 3px solid var(--sp-line); padding-left: 16px; }
+    .sp-center .sp-prose ul, .sp-center .sp-prose ol { display: inline-block; text-align: left; }
+
+    /* Order block */
+    .sp-order {
+        display: grid;
+        gap: 24px;
+        align-items: start;
+    }
+
+    @media (min-width: 820px) {
+        .sp-order { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); }
+    }
+
+    .sp-pack {
+        display: flex;
+        min-height: 68px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 2px solid transparent;
+        border-radius: var(--radius-card);
+        background: var(--color-surface);
+        color: var(--color-ink);
+        padding: 14px 18px;
+        transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .sp-bg-white .sp-pack { border-color: var(--color-line); }
+    .sp-pack:hover { border-color: var(--color-field); }
+    .sp-pack:has(input:checked) { border-color: var(--color-accent); }
+    .sp-pack:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+    .sp-pack.is-sold-out {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .sp-pack.is-sold-out:hover { border-color: transparent; }
+
+    .sp-bg-white .sp-order .bg-surface { background: var(--color-soft); }
+    .sp-bg-white .sp-order .bg-surface .field { background: var(--color-surface); }
+
+    /* Mobile: fixed bar with the price and Order now. */
+    .sp-orderbar {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        border-top: 1px solid var(--color-line);
+        background: var(--color-surface);
+        padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+        box-shadow: 0 -6px 24px rgb(17 19 23 / 0.08);
+        transform: translateY(110%);
+        transition: transform 220ms ease;
+    }
+
+    .sp-orderbar.is-visible { transform: none; }
+    .sp-orderbar[hidden] { display: none; }
+
+    @media (min-width: 640px) {
+        .sp-orderbar { display: none; }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sp-orderbar, .sp-video-play, .sp-faq-icon { transition: none; }
+}

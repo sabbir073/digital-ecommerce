@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\SellingPage;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Services\MediaService;
@@ -20,6 +21,9 @@ class ClearDemoCatalog extends Command
     public function handle(MediaService $media): int
     {
         $products = Product::query()->where('sku', 'like', 'DEMO-%')->with('images', 'variants.image')->get();
+
+        // Demo selling pages go first: a page holds on to the product it sells.
+        SellingPage::withTrashed()->whereIn('product_id', $products->pluck('id'))->forceDelete();
 
         foreach ($products as $product) {
             $images = $product->images->concat($product->variants->pluck('image')->filter())->unique('id');

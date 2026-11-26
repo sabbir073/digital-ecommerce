@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductCsvController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SecuritySettingsController;
+use App\Http\Controllers\Admin\SellingPageController;
 use App\Http\Controllers\Admin\StaffController;
 use Illuminate\Support\Facades\Route;
 
@@ -70,6 +71,15 @@ Route::middleware('admin.auth')->group(function () {
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->middleware('permission:products,delete')->name('products.destroy');
     Route::post('products/{product}/files', [ProductController::class, 'storeFile'])->middleware('permission:products,edit')->name('products.files.store');
     Route::delete('products/{product}/files/{file}', [ProductController::class, 'destroyFile'])->middleware('permission:products,edit')->name('products.files.destroy');
+
+    // Selling pages
+    Route::get('selling-pages', [SellingPageController::class, 'index'])->middleware('permission:selling_pages,view')->name('selling-pages.index');
+    Route::post('selling-pages', [SellingPageController::class, 'store'])->middleware('permission:selling_pages,create')->name('selling-pages.store');
+    Route::get('selling-pages/{page}', [SellingPageController::class, 'edit'])->middleware('permission:selling_pages,view')->name('selling-pages.edit');
+    Route::put('selling-pages/{page}', [SellingPageController::class, 'update'])->middleware('permission:selling_pages,edit')->name('selling-pages.update');
+    Route::post('selling-pages/{page}/publish', [SellingPageController::class, 'publish'])->middleware('permission:selling_pages,publish')->name('selling-pages.publish');
+    Route::post('selling-pages/{page}/unpublish', [SellingPageController::class, 'unpublish'])->middleware('permission:selling_pages,publish')->name('selling-pages.unpublish');
+    Route::delete('selling-pages/{page}', [SellingPageController::class, 'destroy'])->middleware('permission:selling_pages,delete')->name('selling-pages.destroy');
 
     // Categories
     Route::get('categories', [CategoryController::class, 'index'])->middleware('permission:categories,view')->name('categories.index');

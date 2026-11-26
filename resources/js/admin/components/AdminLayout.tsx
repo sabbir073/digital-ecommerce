@@ -8,6 +8,7 @@ import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
+import WebOutlined from '@mui/icons-material/WebOutlined';
 import MenuOutlined from '@mui/icons-material/MenuOutlined';
 import PersonOutline from '@mui/icons-material/PersonOutlineOutlined';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
@@ -65,6 +66,7 @@ const NAV: { heading: string; items: NavItem[] }[] = [
         heading: 'Sales',
         items: [
             { label: 'Orders', href: '/admin/orders', icon: <ReceiptLongOutlined />, module: 'orders', match: (p) => p.startsWith('/admin/orders') },
+            { label: 'Selling pages', href: '/admin/selling-pages', icon: <WebOutlined />, module: 'selling_pages', match: (p) => p.startsWith('/admin/selling-pages') },
             { label: 'Coupons', href: '/admin/coupons', icon: <LocalOfferOutlined />, module: 'coupons', match: (p) => p.startsWith('/admin/coupons') },
         ],
     },

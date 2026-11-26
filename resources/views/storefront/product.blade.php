@@ -149,6 +149,13 @@
                     @endif
                 @if ($canBuy) </form> @else </div> @endif
 
+                @if ($sellingPage)
+                    <a href="{{ $sellingPage->url() }}" class="mt-5 inline-flex min-h-11 items-center gap-2 font-medium text-accent hover:underline">
+                        See the full story and special packs
+                        @include('storefront.partials.icon', ['name' => 'arrow', 'size' => 18])
+                    </a>
+                @endif
+
                 <div class="mt-8 border-t border-line">
                     @if ($product->description)
                         <details class="accordion" open>
