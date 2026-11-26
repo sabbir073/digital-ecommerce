@@ -47,6 +47,8 @@ class ChatAdminTest extends AdminTestCase
         [$conversation, $token] = $this->conversation();
         $moderator = $this->makeAdmin('moderator', ['name' => 'Nadia Karim']);
 
+        $first = $conversation->messages()->max('id');
+
         // The visitor's widget is polling, so they are on the site.
         $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->getJson('/chat/state?after=0')->assertOk()->assertJsonPath('conversation.unread', 0);
 
@@ -60,11 +62,11 @@ class ChatAdminTest extends AdminTestCase
         $this->signIn($this->makeAdmin('moderator'))->postJson("/admin/chat/{$conversation->id}/messages", ['message' => 'Anything else?'])->assertOk();
         $this->assertSame($moderator->id, $conversation->refresh()->assigned_admin_id);
 
-        $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->getJson('/chat/state?after=1')->assertOk()
+        $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->getJson("/chat/state?after={$first}")->assertOk()
             ->assertJsonPath('conversation.unread', 2)->assertJsonPath('messages.0.body', 'Yes, on both.')->assertJsonPath('messages.0.by', 'Nadia');
         // With the panel open the replies count as read.
-        $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->getJson('/chat/state?after=1&open=1')->assertOk();
-        $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->getJson('/chat/state?after=3')->assertOk()->assertJsonPath('conversation.unread', 0);
+        $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->getJson("/chat/state?after={$first}&open=1")->assertOk();
+        $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->getJson('/chat/state?after='.ChatMessage::query()->max('id'))->assertOk()->assertJsonPath('conversation.unread', 0);
     }
 
     public function test_a_reply_is_emailed_when_the_visitor_has_left(): void

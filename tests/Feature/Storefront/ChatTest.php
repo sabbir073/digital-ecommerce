@@ -40,7 +40,7 @@ class ChatTest extends TestCase
         $this->assertNotSame($token, $conversation->visitor_token);
         $this->assertSame(ChatService::hash($token), $conversation->visitor_token);
 
-        $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->postJson('/chat/messages', ['message' => 'And on desktop?', 'after' => 1])
+        $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->postJson('/chat/messages', ['message' => 'And on desktop?', 'after' => $conversation->messages()->max('id')])
             ->assertOk()->assertJsonCount(1, 'messages')->assertJsonPath('messages.0.body', 'And on desktop?');
         $this->withCredentials()->withCookie(ChatService::COOKIE, $token)->getJson('/chat/state?after=0')->assertOk()->assertJsonCount(2, 'messages');
 
