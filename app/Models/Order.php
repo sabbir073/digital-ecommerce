@@ -34,12 +34,12 @@ class Order extends Model
     protected $fillable = [
         'number', 'user_id', 'cart_id', 'checkout_key', 'fingerprint', 'email', 'name', 'status', 'source', 'selling_page_id', 'offer_id', 'coupon_id', 'coupon_code',
         'subtotal_cents', 'discount_cents', 'tax_cents', 'total_cents', 'refunded_cents', 'currency', 'billing_country',
-        'billing_postcode', 'stripe_tax_calculation_id', 'stripe_tax_transaction_id', 'notes', 'ip', 'paid_at',
+        'billing_postcode', 'stripe_tax_calculation_id', 'stripe_tax_transaction_id', 'notes', 'phone', 'customer_note', 'terms_accepted_at', 'ip', 'paid_at',
     ];
 
     protected function casts(): array
     {
-        return ['paid_at' => 'datetime', 'purchase_event_sent_at' => 'datetime'];
+        return ['paid_at' => 'datetime', 'purchase_event_sent_at' => 'datetime', 'terms_accepted_at' => 'datetime'];
     }
 
     public function items(): HasMany

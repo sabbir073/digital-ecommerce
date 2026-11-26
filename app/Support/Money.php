@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Services\StoreSettings;
+
 /** All money is stored as whole cents (USD). */
 class Money
 {
@@ -11,7 +13,15 @@ class Money
         $dollars = intdiv(abs($cents), 100);
         $rest = abs($cents) % 100;
 
-        return ($cents < 0 ? '-' : '').'$'.number_format($dollars).'.'.str_pad((string) $rest, 2, '0', STR_PAD_LEFT);
+        $amount = number_format($dollars).'.'.str_pad((string) $rest, 2, '0', STR_PAD_LEFT);
+        $sign = $cents < 0 ? '-' : '';
+
+        // How prices are written is a store setting; the currency itself is always US dollars.
+        return match (StoreSettings::currencyFormat()) {
+            'us_symbol' => $sign.'US$'.$amount,
+            'code' => $sign.$amount.' USD',
+            default => $sign.'$'.$amount,
+        };
     }
 
     /** "12.50" or "12" from an admin form or CSV to 1250. Null for an empty value. */
@@ -20,7 +30,7 @@ class Money
         if ($value === null || $value === '') {
             return null;
         }
-        $clean = str_replace([',', '$', ' '], '', (string) $value);
+        $clean = str_replace([',', 'US$', '$', 'USD', ' '], '', (string) $value);
         if (! is_numeric($clean)) {
             return null;
         }

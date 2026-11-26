@@ -3,10 +3,10 @@
     <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
         @include('storefront.partials.stars', ['rating' => $review->rating])
         @if ($review->pinned)
-            <span class="badge">Pinned</span>
+            <span class="badge">{{ t('Pinned') }}</span>
         @endif
         @if ($review->verified)
-            <span class="review-verified">@include('storefront.partials.icon', ['name' => 'check', 'size' => 14]) Verified buyer</span>
+            <span class="review-verified">@include('storefront.partials.icon', ['name' => 'check', 'size' => 14]) {{ t('Verified buyer') }}</span>
         @endif
     </div>
     @if ($review->title)
@@ -41,7 +41,7 @@
 
     @if ($review->store_reply)
         <div class="review-reply">
-            <p class="text-label font-semibold">Reply from {{ $storeName }}</p>
+            <p class="text-label font-semibold">{{ t('Reply from :store', ['store' => $storeName]) }}</p>
             <p class="mt-1 whitespace-pre-line">{{ $review->store_reply }}</p>
         </div>
     @endif
@@ -55,11 +55,11 @@
             </button>
         </form>
         <details class="review-report">
-            <summary class="review-action">Report</summary>
+            <summary class="review-action">{{ t('Report') }}</summary>
             <form method="post" action="{{ route('reviews.report', $review) }}" class="mt-3 grid max-w-sm gap-3">
                 @csrf
                 <div>
-                    <label class="field-label" for="report-reason-{{ $review->id }}">Why are you reporting this review?</label>
+                    <label class="field-label" for="report-reason-{{ $review->id }}">{{ t('Why are you reporting this review?') }}</label>
                     <select class="field" id="report-reason-{{ $review->id }}" name="reason" required>
                         @foreach ($reasons as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
@@ -67,10 +67,10 @@
                     </select>
                 </div>
                 <div>
-                    <label class="field-label" for="report-details-{{ $review->id }}">Details (optional)</label>
+                    <label class="field-label" for="report-details-{{ $review->id }}">{{ t('Details (optional)') }}</label>
                     <input class="field" id="report-details-{{ $review->id }}" name="details" maxlength="300">
                 </div>
-                <button type="submit" class="btn btn-secondary btn-sm justify-self-start">Send report</button>
+                <button type="submit" class="btn btn-secondary btn-sm justify-self-start">{{ t('Send report') }}</button>
             </form>
         </details>
     </div>

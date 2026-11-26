@@ -21,7 +21,7 @@ class CouponService
         $coupon = $code === '' ? null : Coupon::query()->whereRaw('UPPER(code) = ?', [$code])->first();
 
         if (! $coupon || ! $coupon->is_active) {
-            throw new CheckoutException('That code is not valid.', 'coupon');
+            throw new CheckoutException(t('That code is not valid.'), 'coupon');
         }
 
         $this->check($coupon, $subtotalCents, $source);

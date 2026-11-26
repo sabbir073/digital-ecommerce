@@ -1,3 +1,4 @@
+import { t } from './shared';
 // Live chat widget. It asks the server for new messages every few seconds while a chat exists
 // (plain requests, so it works on any shared hosting), and stays silent for visitors who never open it.
 
@@ -73,18 +74,18 @@ if (root) {
         if (started) localStorage.setItem(FLAG, '1');
         else localStorage.removeItem(FLAG);
 
-        status.textContent = online ? 'We are online' : 'We are away';
+        status.textContent = online ? t('We are online') : t('We are away');
         status.classList.toggle('chat-status-on', online);
         intro.textContent = (online ? intro.dataset.welcome : intro.dataset.away) ?? '';
         // Name and email are asked once, before the first message.
         details.hidden = started;
-        emailNote.textContent = online ? '(optional)' : '(so we can reply)';
+        emailNote.textContent = online ? t('(optional)') : t('(so we can reply)');
         email.required = !online && !started;
 
         const unread = state.conversation?.unread ?? 0;
         badge.hidden = unread === 0 || isOpen();
         badge.textContent = String(unread);
-        launcher.setAttribute('aria-label', unread > 0 ? `Chat with us, ${unread} new ${unread === 1 ? 'message' : 'messages'}` : 'Chat with us');
+        launcher.setAttribute('aria-label', unread > 0 ? t('Chat with us, :count new', { count: unread }) : t('Chat with us'));
     }
 
     async function call(url: string, payload?: Record<string, unknown>): Promise<State | null> {
@@ -97,10 +98,10 @@ if (root) {
         });
         if (response.status === 422) {
             const data = (await response.json()) as { errors?: Record<string, string[]> };
-            throw new Error(Object.values(data.errors ?? {})[0]?.[0] ?? 'Please check your message.');
+            throw new Error(Object.values(data.errors ?? {})[0]?.[0] ?? t('Please check your message.'));
         }
-        if (response.status === 429) throw new Error('You are sending messages very quickly. Please wait a moment.');
-        if (!response.ok) throw new Error('The message could not be sent. Please try again.');
+        if (response.status === 429) throw new Error(t('You are sending messages very quickly. Please wait a moment.'));
+        if (!response.ok) throw new Error(t('The message could not be sent. Please try again.'));
         return (await response.json()) as State;
     }
 

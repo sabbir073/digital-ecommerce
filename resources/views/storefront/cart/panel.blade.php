@@ -14,9 +14,9 @@
         <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-soft text-muted">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11H6.2L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
         </span>
-        <p class="mt-4 font-heading text-[20px] font-semibold">Your cart is empty</p>
-        <p class="mt-1 text-muted">Add a product to see it here.</p>
-        <a href="{{ route('products') }}" class="btn btn-primary mt-6">Browse products</a>
+        <p class="mt-4 font-heading text-[20px] font-semibold">{{ t('Your cart is empty') }}</p>
+        <p class="mt-1 text-muted">{{ t('Add a product to see it here.') }}</p>
+        <a href="{{ route('products') }}" class="btn btn-primary mt-6">{{ t('Browse products') }}</a>
     </div>
 @else
     <ul class="divide-y divide-line">
@@ -47,13 +47,13 @@
                     <div class="mt-2.5 flex items-center justify-between gap-3">
                         <form action="{{ route('cart.update', $line->id) }}" method="post" data-cart-form class="qty qty-sm" aria-label="Quantity for {{ $line->name }}">
                             @csrf @method('PATCH')
-                            <button type="submit" name="quantity" value="{{ $line->quantity - 1 }}" class="qty-btn" aria-label="Decrease quantity">@include('storefront.partials.icon', ['name' => 'minus', 'size' => 16])</button>
+                            <button type="submit" name="quantity" value="{{ $line->quantity - 1 }}" class="qty-btn" aria-label="{{ t('Decrease quantity') }}">@include('storefront.partials.icon', ['name' => 'minus', 'size' => 16])</button>
                             <span class="w-9 text-center font-semibold" aria-live="polite">{{ $line->quantity }}</span>
-                            <button type="submit" name="quantity" value="{{ $line->quantity + 1 }}" class="qty-btn" aria-label="Increase quantity" @disabled($line->available !== null && $line->quantity >= $line->available)>@include('storefront.partials.icon', ['name' => 'plus', 'size' => 16])</button>
+                            <button type="submit" name="quantity" value="{{ $line->quantity + 1 }}" class="qty-btn" aria-label="{{ t('Increase quantity') }}" @disabled($line->available !== null && $line->quantity >= $line->available)>@include('storefront.partials.icon', ['name' => 'plus', 'size' => 16])</button>
                         </form>
                         <form action="{{ route('cart.remove', $line->id) }}" method="post" data-cart-form>
                             @csrf @method('DELETE')
-                            <button type="submit" class="inline-flex min-h-11 items-center px-2 text-label font-medium text-muted underline-offset-4 hover:text-ink hover:underline">Remove<span class="sr-only"> {{ $line->name }}</span></button>
+                            <button type="submit" class="inline-flex min-h-11 items-center px-2 text-label font-medium text-muted underline-offset-4 hover:text-ink hover:underline">{{ t('Remove') }}<span class="sr-only"> {{ $line->name }}</span></button>
                         </form>
                     </div>
                 </div>
@@ -65,17 +65,17 @@
         @include('storefront.cart.coupon', ['summary' => $summary, 'buy' => false])
 
         <dl class="mt-5 space-y-2">
-            <div class="flex justify-between"><dt class="text-muted">Subtotal</dt><dd>{{ Money::format($summary->subtotalCents) }}</dd></div>
+            <div class="flex justify-between"><dt class="text-muted">{{ t('Subtotal') }}</dt><dd>{{ Money::format($summary->subtotalCents) }}</dd></div>
             @if ($summary->discountCents > 0)
-                <div class="flex justify-between"><dt class="text-muted">Discount</dt><dd>-{{ Money::format($summary->discountCents) }}</dd></div>
+                <div class="flex justify-between"><dt class="text-muted">{{ t('Discount') }}</dt><dd>-{{ Money::format($summary->discountCents) }}</dd></div>
             @endif
-            <div class="flex items-baseline justify-between pt-1"><dt class="font-semibold">Total</dt><dd class="font-heading text-[22px] font-semibold">{{ Money::format($summary->totalCents()) }}</dd></div>
+            <div class="flex items-baseline justify-between pt-1"><dt class="font-semibold">{{ t('Total') }}</dt><dd class="font-heading text-[22px] font-semibold">{{ Money::format($summary->totalCents()) }}</dd></div>
         </dl>
-        <p class="mt-1 text-label text-muted">Tax, if any, is added at checkout.</p>
+        <p class="mt-1 text-label text-muted">{{ t('Tax, if any, is added at checkout.') }}</p>
 
-        <a href="{{ route('checkout') }}" class="btn btn-accent mt-5 w-full" @if ($summary->hasIssues()) aria-disabled="true" @endif>Checkout</a>
+        <a href="{{ route('checkout') }}" class="btn btn-accent mt-5 w-full" @if ($summary->hasIssues()) aria-disabled="true" @endif>{{ t('Checkout') }}</a>
         @if ($summary->hasIssues())
-            <p class="mt-2 text-center text-label text-muted">Fix the items marked above to continue.</p>
+            <p class="mt-2 text-center text-label text-muted">{{ t('Fix the items marked above to continue.') }}</p>
         @endif
     </div>
 @endif

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Storefront;
 
+use App\Mail\PasswordReset;
 use App\Models\Order;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
 
 class AccountTest extends CheckoutTestCase
 {
@@ -60,18 +60,20 @@ class AccountTest extends CheckoutTestCase
 
     public function test_a_forgotten_password_can_be_reset(): void
     {
-        Notification::fake();
+        Mail::fake();
         $user = User::factory()->create(['email' => 'sam@example.com']);
 
         // The answer is the same whether or not the account exists.
         $this->post('/forgot-password', ['email' => 'nobody@example.com'])->assertSessionHas('success');
         $this->post('/forgot-password', ['email' => 'Sam@Example.com'])->assertSessionHas('success');
 
+        // One email, to the account that exists, carrying the reset link.
         $token = null;
-        Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use (&$token) {
-            $token = $notification->token;
+        Mail::assertSentCount(1);
+        Mail::assertSent(PasswordReset::class, function (PasswordReset $mail) use (&$token) {
+            $token = basename((string) parse_url($mail->resetUrl, PHP_URL_PATH));
 
-            return true;
+            return $mail->hasTo('sam@example.com');
         });
 
         $this->get("/reset-password/{$token}?email=sam@example.com")->assertOk();

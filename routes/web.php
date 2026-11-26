@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\Storefront\AccountController;
+use App\Http\Controllers\Storefront\BlogController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CatalogController;
 use App\Http\Controllers\Storefront\ChatController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\OrderController;
+use App\Http\Controllers\Storefront\PageController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ReviewController;
 use App\Http\Controllers\Storefront\SellingPageController;
@@ -27,6 +29,13 @@ Route::get('/review/{token}', [ReviewController::class, 'invited'])->name('revie
 Route::post('/review/{token}', [ReviewController::class, 'storeInvited'])->middleware('throttle:review')->name('review.invited.store');
 Route::post('/reviews/{review}/helpful', [ReviewController::class, 'helpful'])->middleware('throttle:review-vote')->name('reviews.helpful');
 Route::post('/reviews/{review}/report', [ReviewController::class, 'report'])->middleware('throttle:review-vote')->name('reviews.report');
+
+// Content pages, the contact form and the blog
+Route::get('/pages/{slug}', [PageController::class, 'show'])->name('page.show');
+Route::post('/contact', [PageController::class, 'contact'])->middleware('throttle:contact')->name('contact.send');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/category/{category}', [BlogController::class, 'index'])->name('blog.category');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 // Live chat widget
 Route::get('/chat/state', [ChatController::class, 'state'])->middleware('throttle:chat-poll')->name('chat.state');

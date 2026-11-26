@@ -41,7 +41,7 @@ class CartService
         $cart = is_string($token) && $token !== '' ? Cart::query()->where('token', $token)->first() : null;
 
         if (! $cart && $create) {
-            $cart = Cart::create(['token' => Str::random(48), 'user_id' => Auth::id()]);
+            $cart = Cart::create(['token' => Str::random(48), 'user_id' => Auth::guard('web')->id()]);
             Cookie::queue(self::COOKIE, $cart->token, self::COOKIE_MINUTES, null, null, null, true, false, 'lax');
             // Later calls in this same request must find the cart too.
             $this->request()->cookies->set(self::COOKIE, $cart->token);
@@ -53,7 +53,7 @@ class CartService
     /** A one-item cart for "Buy now", kept apart from the shopper's real cart. */
     public function buyNow(Product $product, ?Variant $variant, int $quantity): Cart
     {
-        $cart = Cart::create(['token' => Str::random(48), 'user_id' => Auth::id()]);
+        $cart = Cart::create(['token' => Str::random(48), 'user_id' => Auth::guard('web')->id()]);
         $this->add($cart, $product, $variant, $quantity);
         $this->request()->session()->put('buy_now_cart', $cart->id);
 
@@ -71,11 +71,11 @@ class CartService
     public function add(Cart $cart, Product $product, ?Variant $variant, int $quantity): CartItem
     {
         if ($product->status !== 'active') {
-            throw new CheckoutException('This product is not available.', 'stock');
+            throw new CheckoutException(t('This product is not available.'), 'stock');
         }
         $product->loadMissing('variants');
         if ($product->hasVariants() && (! $variant || $variant->product_id !== $product->id)) {
-            throw new CheckoutException('Choose an option first.', 'variant');
+            throw new CheckoutException(t('Choose an option first.'), 'variant');
         }
         if (! $product->hasVariants()) {
             $variant = null;
@@ -87,7 +87,7 @@ class CartService
         $available = $this->stock->available($product, $variant);
         if ($available !== null) {
             if ($available === 0) {
-                throw new CheckoutException('This item is out of stock.', 'stock');
+                throw new CheckoutException(t('This item is out of stock.'), 'stock');
             }
             $wanted = min($wanted, $available);
         }

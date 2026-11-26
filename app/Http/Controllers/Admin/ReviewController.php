@@ -10,6 +10,7 @@ use App\Models\Review;
 use App\Services\ActivityLogger;
 use App\Services\MediaService;
 use App\Services\Reviews\ReviewSettings;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -281,6 +282,19 @@ class ReviewController extends Controller
         }
 
         return back()->with('success', $summary);
+    }
+
+    /** Every review as CSV, for the owner's records or a move to another system. */
+    public function export(): StreamedResponse
+    {
+        $this->activity->log('export', 'reviews', null, 'Reviews CSV');
+
+        return Csv::download('reviews', ['date', 'product', 'rating', 'title', 'review', 'name', 'email', 'country', 'status', 'verified_buyer', 'source', 'order', 'reply'], (function () {
+            foreach (Review::query()->with(['product:id,name', 'order:id,number'])->orderBy('id')->cursor() as $r) {
+                yield [$r->created_at?->toDateString(), $r->product?->name ?? 'Store review', $r->rating, $r->title, $r->body, $r->display_name, $r->email,
+                    $r->country_code, $r->status, $r->verified ? 'yes' : 'no', $r->source_label ?: $r->source, $r->order?->number, $r->store_reply];
+            }
+        })());
     }
 
     public function sample(): StreamedResponse

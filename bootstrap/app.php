@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthenticateAdmin;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\MaintenanceMode;
 use App\Http\Middleware\RequirePermission;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.auth' => AuthenticateAdmin::class,
             'permission' => RequirePermission::class,
         ]);
+        $middleware->web(append: [MaintenanceMode::class]);
         // Stripe's webhook is verified by its signature instead of a CSRF token.
         $middleware->validateCsrfTokens(except: ['stripe/webhook']);
         $middleware->redirectUsersTo(fn (Request $request) => $request->is('admin', 'admin/*') ? '/admin' : '/account');

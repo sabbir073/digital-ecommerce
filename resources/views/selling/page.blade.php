@@ -19,13 +19,13 @@
 
 @if ($hasOrder)
     @section('header-action')
-        <a href="#order" class="btn btn-primary btn-sm" data-order-link>Order now</a>
+        <a href="#order" class="btn btn-primary btn-sm" data-order-link>{{ t('Order now') }}</a>
     @endsection
 @endif
 
 @section('content')
     @if ($preview)
-        <p class="bg-ink px-6 py-2 text-center text-label font-medium text-white" role="status">Preview of the draft. Customers do not see this version until you publish.</p>
+        <p class="bg-ink px-6 py-2 text-center text-label font-medium text-white" role="status">{{ t('Preview of the draft. Customers do not see this version until you publish.') }}</p>
     @endif
 
     @if ($builder ?? false)
@@ -38,7 +38,7 @@
         {{-- Mobile only: appears once the hero has scrolled away, hides while the order block is on screen. --}}
         <div class="sp-orderbar" data-orderbar hidden>
             <span class="font-heading text-[20px] font-semibold" data-orderbar-price>{{ Money::format($fromPrice) }}</span>
-            <a href="#order" class="btn btn-accent btn-sm" data-order-link>Order now</a>
+            <a href="#order" class="btn btn-accent btn-sm" data-order-link>{{ t('Order now') }}</a>
         </div>
     @endif
 

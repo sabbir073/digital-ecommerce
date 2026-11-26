@@ -6,7 +6,7 @@
                 <p class="mt-2">@include('storefront.partials.rating', ['average' => $data['summary']['average'], 'count' => $data['summary']['count']])</p>
             </div>
             <a href="{{ route('reviews') }}" class="inline-flex min-h-11 items-center gap-1.5 font-medium text-accent hover:underline">
-                Read all reviews @include('storefront.partials.icon', ['name' => 'arrow', 'size' => 18])
+                {{ t('Read all reviews') }} @include('storefront.partials.icon', ['name' => 'arrow', 'size' => 18])
             </a>
         </div>
         <ul class="mt-7 grid gap-5 md:grid-cols-3">
@@ -15,7 +15,7 @@
                     <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                         @include('storefront.partials.stars', ['rating' => $review->rating])
                         @if ($review->verified)
-                            <span class="review-verified">Verified buyer</span>
+                            <span class="review-verified">{{ t('Verified buyer') }}</span>
                         @endif
                     </div>
                     @if ($review->title)

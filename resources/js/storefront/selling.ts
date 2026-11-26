@@ -1,3 +1,5 @@
+import { money, t } from './shared';
+import { extraProblems, extras } from './checkout-extras';
 // One-page selling page: Order-now links, the mobile order bar, countdown, click-to-play video
 // and the inline checkout. Card details go from the browser straight to Stripe.
 
@@ -35,7 +37,6 @@ interface StripeInstance {
 }
 type StripeFactory = (key: string) => StripeInstance;
 
-const money = (cents: number): string => (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const csrf = (): string => document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
 const reducedMotion = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -123,7 +124,7 @@ function countdown(): void {
             }
             const days = Math.floor(left / 86400);
             const text = `${pad(Math.floor((left % 86400) / 3600))}:${pad(Math.floor((left % 3600) / 60))}:${pad(left % 60)}`;
-            node.textContent = `Ends in ${days > 0 ? `${days}d ` : ''}${text}`;
+            node.textContent = t('Ends in :time', { time: (days > 0 ? days + 'd ' : '') + text });
             window.setTimeout(tick, 1000);
         };
         tick();
@@ -176,7 +177,7 @@ async function checkout(): Promise<void> {
                     return;
                 }
                 if (data.state === 'failed') {
-                    onFailed(data.message ?? 'The payment did not go through. Nothing was charged.');
+                    onFailed(data.message ?? t('The payment did not go through. Nothing was charged.'));
                     return;
                 }
             } catch {
@@ -184,7 +185,7 @@ async function checkout(): Promise<void> {
             }
             const waited = Date.now() - started;
             if (waited > 120_000) {
-                onFailed('Your payment is taking longer than usual to confirm. You can close this page: we will email your download links as soon as it is confirmed.');
+                onFailed(t('Your payment is taking longer than usual to confirm. You can close this page: we will email your download links as soon as it is confirmed.'));
                 return;
             }
             window.setTimeout(check, waited < 20_000 ? 1500 : 4000);
@@ -273,7 +274,7 @@ async function checkout(): Promise<void> {
         }
         if (data.couponProblem) setError('coupon', data.couponProblem);
 
-        if (payLabel) payLabel.textContent = total > 0 ? `${config.payLabel} ${money(total)}` : 'Place order';
+        if (payLabel) payLabel.textContent = total > 0 ? `${config.payLabel} ${money(total)}` : t('Place order');
         if (barPrice) barPrice.textContent = money(total);
         if (mount) mount.hidden = total === 0;
         if (total > 0) elements?.update({ amount: total });
@@ -319,12 +320,12 @@ async function checkout(): Promise<void> {
             if (couponInput) couponInput.value = '';
             show(result.data);
         } else {
-            setError('coupon', result.status === 429 ? 'Too many tries. Wait a minute and try again.' : (result.data.errors?.coupon?.[0] ?? 'That code could not be applied.'));
+            setError('coupon', result.status === 429 ? t('Too many tries. Wait a minute and try again.') : (result.data.errors?.coupon?.[0] ?? t('That code could not be applied.')));
         }
     };
     one('[data-coupon-apply]')?.addEventListener('click', () => {
         const code = couponInput?.value.trim() ?? '';
-        if (code === '') setError('coupon', 'Enter a code first.');
+        if (code === '') setError('coupon', t('Enter a code first.'));
         else void sendCoupon(code);
     });
     couponInput?.addEventListener('keydown', (event) => {
@@ -340,13 +341,13 @@ async function checkout(): Promise<void> {
         const value = (field(name)?.value ?? '').trim();
         switch (name) {
             case 'email':
-                return /^\S+@\S+\.\S+$/.test(value) ? '' : 'Enter a valid email so we can send your download links.';
+                return /^\S+@\S+\.\S+$/.test(value) ? '' : t('Enter a valid email so we can send your download links.');
             case 'name':
-                return value ? '' : 'Enter your name.';
+                return value ? '' : t('Enter your name.');
             case 'country':
-                return value ? '' : 'Choose your country.';
+                return value ? '' : t('Choose your country.');
             case 'postcode':
-                return ['US', 'CA', 'GB'].includes(field('country')?.value ?? '') && !value ? 'Enter your ZIP or postal code.' : '';
+                return ['US', 'CA', 'GB'].includes(field('country')?.value ?? '') && !value ? t('Enter your ZIP or postal code.') : '';
             default:
                 return '';
         }
@@ -391,7 +392,7 @@ async function checkout(): Promise<void> {
                 })
                 .mount(mount);
         } catch {
-            setError('checkout', 'The payment form could not be loaded. Check your connection and reload the page.');
+            setError('checkout', t('The payment form could not be loaded. Check your connection and reload the page.'));
         }
     }
 
@@ -408,7 +409,7 @@ async function checkout(): Promise<void> {
                 first ??= field(name);
             }
         });
-        if (!chosen()) setError('checkout', 'Choose a pack to continue.');
+        if (!chosen()) setError('checkout', t('Choose a pack to continue.'));
         if (first || !chosen()) {
             (first as HTMLElement | null)?.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
             (first as HTMLElement | null)?.focus({ preventScroll: true });
@@ -421,15 +422,21 @@ async function checkout(): Promise<void> {
             name: (field('name')?.value ?? '').trim(),
             country: field('country')?.value ?? '',
             postcode: (field('postcode')?.value ?? '').trim(),
+            ...extras(form),
         };
+        const extraErrors = extraProblems(form);
+        if (Object.keys(extraErrors).length > 0) {
+            Object.entries(extraErrors).forEach(([name, messages]) => setError(name, messages[0] ?? ''));
+            return;
+        }
 
         let waiting = false;
         setBusy(true);
         try {
             if (total > 0) {
-                if (!stripe || !elements) throw new Error('The payment form is not ready. Reload the page and try again.');
+                if (!stripe || !elements) throw new Error(t('The payment form is not ready. Reload the page and try again.'));
                 const submitted = await elements.submit();
-                if (submitted.error) throw new Error(submitted.error.message ?? 'Check your payment details.');
+                if (submitted.error) throw new Error(submitted.error.message ?? t('Check your payment details.'));
             }
 
             const started = await post<{ client_secret?: string | null; paid?: boolean; total?: number; tax?: number; confirm_url?: string; return_url?: string; errors?: Record<string, string[]>; message?: string }>(
@@ -437,14 +444,14 @@ async function checkout(): Promise<void> {
                 values,
             );
             if (!started.ok) {
-                if (started.status === 429) throw new Error('Too many attempts. Wait a minute and try again.');
-                if (started.status === 419) throw new Error('This page expired. Reload it and try again.');
+                if (started.status === 429) throw new Error(t('Too many attempts. Wait a minute and try again.'));
+                if (started.status === 419) throw new Error(t('This page expired. Reload it and try again.'));
                 if (started.data.errors) {
                     Object.entries(started.data.errors).forEach(([name, messages]) => setError(name, messages[0] ?? ''));
                     if (started.data.errors.stock) quote();
                     return;
                 }
-                throw new Error(started.data.message ?? 'Something went wrong. Please try again.');
+                throw new Error(started.data.message ?? t('Something went wrong. Please try again.'));
             }
 
             if (!started.data.paid && started.data.client_secret) {
@@ -467,7 +474,7 @@ async function checkout(): Promise<void> {
                         },
                     },
                 });
-                if (confirmed.error) throw new Error(confirmed.error.message ?? 'The payment did not go through. Try another card.');
+                if (confirmed.error) throw new Error(confirmed.error.message ?? t('The payment did not go through. Try another card.'));
             }
 
             // Paid at Stripe. The order turns Paid when Stripe's signed confirmation reaches the server.
@@ -478,7 +485,7 @@ async function checkout(): Promise<void> {
             });
         } catch (error) {
             // Everything the customer typed stays in place.
-            setError('checkout', error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+            setError('checkout', error instanceof Error ? error.message : t('Something went wrong. Please try again.'));
             one('[data-error="checkout"]')?.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
         } finally {
             if (!waiting) setBusy(false);

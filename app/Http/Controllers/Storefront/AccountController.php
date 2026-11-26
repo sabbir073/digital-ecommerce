@@ -20,7 +20,7 @@ class AccountController extends Controller
 {
     public function index(Request $request): View
     {
-        $user = $request->user();
+        $user = $request->user('web');
 
         // Orders placed while signed in. Guest orders with the same email are added only once the
         // address is verified, so nobody can claim another person's orders by registering their email.
@@ -45,7 +45,7 @@ class AccountController extends Controller
         $data = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
-        ], ['email.required' => 'Enter your email.', 'password.required' => 'Enter your password.']);
+        ], ['email.required' => t('Enter your email.'), 'password.required' => t('Enter your password.')]);
 
         $data['email'] = Str::lower($data['email']);
 
@@ -70,18 +70,18 @@ class AccountController extends Controller
             'email' => ['required', 'email:rfc', 'max:190', 'unique:users,email'],
             'password' => ['required', PasswordRule::min(8)],
         ], [
-            'name.required' => 'Enter your name.',
-            'email.required' => 'Enter your email.',
-            'email.unique' => 'An account with this email already exists. Sign in instead.',
-            'password.required' => 'Choose a password.',
-            'password.min' => 'Use at least 8 characters.',
+            'name.required' => t('Enter your name.'),
+            'email.required' => t('Enter your email.'),
+            'email.unique' => t('An account with this email already exists. Sign in instead.'),
+            'password.required' => t('Choose a password.'),
+            'password.min' => t('Use at least 8 characters.'),
         ]);
 
         $user = User::create(['name' => $data['name'], 'email' => Str::lower($data['email']), 'password' => $data['password']]);
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('account')->with('success', 'Your account is ready.');
+        return redirect()->route('account')->with('success', t('Your account is ready.'));
     }
 
     public function logout(Request $request): RedirectResponse
@@ -100,11 +100,11 @@ class AccountController extends Controller
 
     public function sendReset(Request $request): RedirectResponse
     {
-        $request->validate(['email' => ['required', 'email']], ['email.required' => 'Enter your email.']);
+        $request->validate(['email' => ['required', 'email']], ['email.required' => t('Enter your email.')]);
         Password::sendResetLink(['email' => Str::lower((string) $request->input('email'))]);
 
         // Same answer whether or not the address has an account, so nobody can probe for accounts.
-        return back()->with('success', 'If that email has an account, a reset link is on its way.');
+        return back()->with('success', t('If that email has an account, a reset link is on its way.'));
     }
 
     public function showReset(Request $request, string $token): View
@@ -119,9 +119,9 @@ class AccountController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', PasswordRule::min(8)],
         ], [
-            'password.required' => 'Choose a new password.',
-            'password.confirmed' => 'The two passwords do not match.',
-            'password.min' => 'Use at least 8 characters.',
+            'password.required' => t('Choose a new password.'),
+            'password.confirmed' => t('The two passwords do not match.'),
+            'password.min' => t('Use at least 8 characters.'),
         ]);
 
         $data['email'] = Str::lower($data['email']);
@@ -135,6 +135,6 @@ class AccountController extends Controller
             throw ValidationException::withMessages(['email' => 'This reset link is not valid any more. Ask for a new one.']);
         }
 
-        return redirect()->route('login')->with('success', 'Your password was changed. Sign in with the new one.');
+        return redirect()->route('login')->with('success', t('Your password was changed. Sign in with the new one.'));
     }
 }

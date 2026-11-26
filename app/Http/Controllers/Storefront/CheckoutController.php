@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Checkout\CartService;
 use App\Services\Checkout\CheckoutService;
 use App\Services\Payments\PaymentGateway;
+use App\Services\StoreSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -36,7 +37,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart');
         }
 
-        $user = Auth::user();
+        $user = Auth::guard('web')->user();
 
         return view('storefront.checkout', [
             'summary' => $summary,
@@ -82,34 +83,41 @@ class CheckoutController extends Controller
     /** Create (or continue) the unpaid order and hand the browser what it needs to confirm the payment. */
     public function start(Request $request): JsonResponse
     {
+        $settings = app(StoreSettings::class);
+        [$extraRules, $extraMessages] = $settings->checkoutRules();
+        // With guest checkout switched off, a customer signs in or makes an account while paying.
+        $needsAccount = ! $settings->checkout()['guest_checkout'] && ! Auth::guard('web')->check();
+        if ($needsAccount) {
+            $request->merge(['create_account' => true]);
+        }
         $data = $request->validate([
             'email' => ['required', 'email:rfc', 'max:190'],
             'name' => ['required', 'string', 'max:120'],
             'country' => ['required', Rule::in(array_keys(config('countries')))],
             'postcode' => [Rule::requiredIf(fn () => in_array($request->input('country'), ['US', 'CA'], true)), 'nullable', 'string', 'max:20'],
             'create_account' => ['boolean'],
-            'password' => [Rule::requiredIf(fn () => $request->boolean('create_account') && ! Auth::check()), 'nullable', Password::min(8)],
-        ], [
-            'email.required' => 'Enter your email so we can send your download links.',
-            'email.email' => 'That email address does not look right.',
-            'name.required' => 'Enter your name.',
-            'country.required' => 'Choose your country.',
-            'postcode.required' => 'Enter your ZIP or postal code.',
-            'password.required' => 'Choose a password for your account.',
-            'password.min' => 'Use at least 8 characters for your password.',
+            'password' => [Rule::requiredIf(fn () => $request->boolean('create_account') && ! Auth::guard('web')->check()), 'nullable', Password::min(8)],
+        ] + $extraRules, $extraMessages + [
+            'email.required' => t('Enter your email so we can send your download links.'),
+            'email.email' => t('That email address does not look right.'),
+            'name.required' => t('Enter your name.'),
+            'country.required' => t('Choose your country.'),
+            'postcode.required' => t('Enter your ZIP or postal code.'),
+            'password.required' => t('Choose a password for your account.'),
+            'password.min' => t('Use at least 8 characters for your password.'),
         ]);
 
         $data['email'] = Str::lower($data['email']);
 
         $cart = $this->cart($request->boolean('buy'));
         if (! $cart) {
-            return response()->json(['errors' => ['checkout' => ['Your cart is empty.']]], 422);
+            return response()->json(['errors' => ['checkout' => [t('Your cart is empty.')]]], 422);
         }
 
-        $user = Auth::user();
+        $user = Auth::guard('web')->user();
         if (! $user && $request->boolean('create_account')) {
             if (User::query()->where('email', $data['email'])->exists()) {
-                return response()->json(['errors' => ['email' => ['An account with this email already exists. Sign in, or untick "Create an account".']]], 422);
+                return response()->json(['errors' => ['email' => [t('An account with this email already exists. Sign in, or untick "Create an account".')]]], 422);
             }
             $user = User::create(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password']]);
             Auth::login($user);
@@ -130,6 +138,7 @@ class CheckoutController extends Controller
         }
 
         $order = $result['order'];
+        $order->forceFill($settings->checkoutExtras($data))->save();
 
         return response()->json([
             'client_secret' => $result['client_secret'],

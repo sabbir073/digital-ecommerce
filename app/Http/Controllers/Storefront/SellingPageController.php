@@ -13,6 +13,7 @@ use App\Services\Checkout\CouponService;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Selling\OfferPricing;
 use App\Services\Selling\PagePresenter;
+use App\Services\StoreSettings;
 use App\Support\Blocks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -125,18 +126,20 @@ class SellingPageController extends Controller
     public function start(Request $request, string $slug): JsonResponse
     {
         $page = $this->page($slug);
+        $settings = app(StoreSettings::class);
+        [$extraRules, $extraMessages] = $settings->checkoutRules();
         $data = $request->validate([
             'offer_id' => ['required', 'integer'],
             'email' => ['required', 'email:rfc', 'max:190'],
             'name' => ['required', 'string', 'max:120'],
             'country' => ['required', Rule::in(array_keys(config('countries')))],
             'postcode' => [Rule::requiredIf(fn () => in_array($request->input('country'), ['US', 'CA'], true)), 'nullable', 'string', 'max:20'],
-        ], [
-            'email.required' => 'Enter your email so we can send your download links.',
-            'email.email' => 'That email address does not look right.',
-            'name.required' => 'Enter your name.',
-            'country.required' => 'Choose your country.',
-            'postcode.required' => 'Enter your ZIP or postal code.',
+        ] + $extraRules, $extraMessages + [
+            'email.required' => t('Enter your email so we can send your download links.'),
+            'email.email' => t('That email address does not look right.'),
+            'name.required' => t('Enter your name.'),
+            'country.required' => t('Choose your country.'),
+            'postcode.required' => t('Enter your ZIP or postal code.'),
         ]);
 
         $offer = $this->offer($page, (int) $data['offer_id']);
@@ -153,7 +156,7 @@ class SellingPageController extends Controller
                 'selling_page_id' => $page->id,
                 'offer_id' => $offer->id,
                 'checkout_key' => $this->checkoutKey($request, $page),
-                'user_id' => Auth::id(),
+                'user_id' => Auth::guard('web')->id(),
                 'ip' => $request->ip(),
             ]);
         } catch (CheckoutException $e) {
@@ -161,6 +164,7 @@ class SellingPageController extends Controller
         }
 
         $order = $result['order'];
+        $order->forceFill($settings->checkoutExtras($data))->save();
 
         return response()->json([
             'client_secret' => $result['client_secret'],

@@ -2,32 +2,34 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\UsesEmailTemplate;
 use App\Models\ChatConversation;
-use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class ChatReply extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, UsesEmailTemplate;
 
     public function __construct(public ChatConversation $conversation, public string $text) {}
 
-    public function envelope(): Envelope
+    protected function templateKey(): string
     {
-        return new Envelope(subject: 'Reply to your message to '.Setting::get('store.name', config('app.name')));
+        return 'chat_reply';
     }
 
-    public function content(): Content
+    protected function templateVariables(): array
     {
-        return new Content(markdown: 'emails.chat-reply', with: [
-            'conversation' => $this->conversation,
-            'text' => $this->text,
-            'storeName' => Setting::get('store.name', config('app.name')),
-        ]);
+        return ['customer_name' => $this->conversation->name ?: 'there'];
+    }
+
+    protected function templateBlocks(): array
+    {
+        return [
+            'message' => ['type' => 'panel', 'text' => $this->text],
+            'button' => ['type' => 'button', 'url' => url('/'), 'label' => 'Back to the store'],
+        ];
     }
 }

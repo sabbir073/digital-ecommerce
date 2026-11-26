@@ -6,14 +6,24 @@ import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
+import ArticleOutlined from '@mui/icons-material/ArticleOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import EditNoteOutlined from '@mui/icons-material/EditNoteOutlined';
+import HomeOutlined from '@mui/icons-material/HomeOutlined';
+import MailOutlined from '@mui/icons-material/MailOutlined';
+import MenuOpenOutlined from '@mui/icons-material/MenuOpenOutlined';
+import PeopleAltOutlined from '@mui/icons-material/PeopleAltOutlined';
 import StarBorderOutlined from '@mui/icons-material/StarBorderOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import WebOutlined from '@mui/icons-material/WebOutlined';
 import MenuOutlined from '@mui/icons-material/MenuOutlined';
 import PersonOutline from '@mui/icons-material/PersonOutlineOutlined';
+import MarkEmailReadOutlined from '@mui/icons-material/MarkEmailReadOutlined';
+import PaletteOutlined from '@mui/icons-material/PaletteOutlined';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
+import StorefrontOutlined from '@mui/icons-material/StorefrontOutlined';
+import TranslateOutlined from '@mui/icons-material/TranslateOutlined';
 import PhotoLibraryOutlined from '@mui/icons-material/PhotoLibraryOutlined';
 import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import Alert from '@mui/material/Alert';
@@ -68,6 +78,7 @@ const NAV: { heading: string; items: NavItem[] }[] = [
         heading: 'Sales',
         items: [
             { label: 'Orders', href: '/admin/orders', icon: <ReceiptLongOutlined />, module: 'orders', match: (p) => p.startsWith('/admin/orders') },
+            { label: 'Customers', href: '/admin/customers', icon: <PeopleAltOutlined />, module: 'customers', match: (p) => p.startsWith('/admin/customers') },
             { label: 'Selling pages', href: '/admin/selling-pages', icon: <WebOutlined />, module: 'selling_pages', match: (p) => p.startsWith('/admin/selling-pages') },
             { label: 'Coupons', href: '/admin/coupons', icon: <LocalOfferOutlined />, module: 'coupons', match: (p) => p.startsWith('/admin/coupons') },
             { label: 'Reviews', href: '/admin/reviews', icon: <StarBorderOutlined />, module: 'reviews', match: (p) => p.startsWith('/admin/reviews') },
@@ -75,8 +86,24 @@ const NAV: { heading: string; items: NavItem[] }[] = [
         ],
     },
     {
+        heading: 'Content',
+        items: [
+            { label: 'Home page', href: '/admin/home', icon: <HomeOutlined />, module: 'content', match: (p) => p.startsWith('/admin/home') },
+            { label: 'Pages', href: '/admin/pages', icon: <ArticleOutlined />, module: 'content', match: (p) => p.startsWith('/admin/pages') },
+            { label: 'Blog', href: '/admin/blog', icon: <EditNoteOutlined />, module: 'blog', match: (p) => p.startsWith('/admin/blog') },
+            { label: 'Header and footer', href: '/admin/navigation', icon: <MenuOpenOutlined />, module: 'content', match: (p) => p.startsWith('/admin/navigation') },
+            { label: 'Messages', href: '/admin/messages', icon: <MailOutlined />, module: 'chat', match: (p) => p.startsWith('/admin/messages') },
+        ],
+    },
+    {
         heading: 'Settings',
-        items: [{ label: 'Payments', href: '/admin/settings/payments', icon: <PaymentsOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/payments') }],
+        items: [
+            { label: 'Store', href: '/admin/settings/store', icon: <StorefrontOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/store') },
+            { label: 'Theme', href: '/admin/settings/theme', icon: <PaletteOutlined />, module: 'theme', match: (p) => p.startsWith('/admin/settings/theme') },
+            { label: 'Emails', href: '/admin/settings/emails', icon: <MarkEmailReadOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/emails') },
+            { label: 'Interface text', href: '/admin/settings/text', icon: <TranslateOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/text') },
+            { label: 'Payments', href: '/admin/settings/payments', icon: <PaymentsOutlined />, module: 'settings', match: (p) => p.startsWith('/admin/settings/payments') },
+        ],
     },
     {
         heading: 'Team',

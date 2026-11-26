@@ -24,7 +24,9 @@ import MediaPicker from './MediaPicker';
 export interface FieldDef {
     key: string;
     label: string;
-    type: 'text' | 'textarea' | 'richtext' | 'toggle' | 'select' | 'image' | 'video' | 'images' | 'reviews' | 'datetime' | 'url' | 'strings' | 'list' | 'table';
+    type: 'text' | 'textarea' | 'richtext' | 'toggle' | 'select' | 'image' | 'video' | 'images' | 'reviews' | 'datetime' | 'url' | 'strings' | 'list' | 'table' | 'pick' | 'picks';
+    /** For pick and picks: what can be chosen. */
+    choices?: { id: number; label: string }[];
     max?: number;
     min?: number;
     itemMax?: number;
@@ -59,7 +61,7 @@ const toLocalInput = (iso: unknown): string => {
 };
 
 /** A small editor for headings, paragraphs, lists and links. The server cleans what it saves. */
-function RichText({ value, onChange, disabled, label }: { value: string; onChange: (html: string) => void; disabled: boolean; label: string }) {
+export function RichText({ value, onChange, disabled, label }: { value: string; onChange: (html: string) => void; disabled: boolean; label: string }) {
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -214,6 +216,30 @@ function Field({ field, value, onChange, shared, error }: { field: FieldDef; val
                     onChange={(_, chosen) => onChange(chosen.map((r) => r.id).slice(0, field.max ?? 12))}
                     noOptionsText="This product has no approved reviews yet"
                     renderInput={(params) => <TextField {...params} label={field.label} helperText="Used when “Hand-picked” is chosen. Only approved reviews of the linked product are listed." />}
+                />
+            );
+        }
+        case 'pick':
+        case 'picks': {
+            const choices = field.choices ?? [];
+            if (field.type === 'pick') {
+                return (
+                    <Autocomplete
+                        disabled={disabled} options={choices} getOptionLabel={(o) => o.label} isOptionEqualToValue={(a, b) => a.id === b.id}
+                        value={choices.find((c) => c.id === value) ?? null} onChange={(_, chosen) => onChange(chosen?.id ?? null)}
+                        noOptionsText="Nothing to choose from yet"
+                        renderInput={(params) => <TextField {...params} label={field.label} />}
+                    />
+                );
+            }
+            const ids = (value as number[] | undefined) ?? [];
+            return (
+                <Autocomplete
+                    multiple disabled={disabled} options={choices} getOptionLabel={(o) => o.label} isOptionEqualToValue={(a, b) => a.id === b.id}
+                    value={ids.map((id) => choices.find((c) => c.id === id)).filter((c): c is { id: number; label: string } => Boolean(c))}
+                    onChange={(_, chosen) => onChange(chosen.map((c) => c.id).slice(0, field.max ?? 12))}
+                    noOptionsText="Nothing to choose from yet"
+                    renderInput={(params) => <TextField {...params} label={field.label} helperText={field.max ? `Up to ${field.max}, shown in the order you pick them.` : undefined} />}
                 />
             );
         }

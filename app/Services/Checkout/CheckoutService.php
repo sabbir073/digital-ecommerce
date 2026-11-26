@@ -7,6 +7,7 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\StripeSettings;
+use App\Services\StoreSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -47,7 +48,7 @@ class CheckoutService
                 $result = $this->gateway->calculateTax($this->taxLines($summary), $country, $postcode);
             } catch (ApiErrorException $e) {
                 Log::warning('Stripe Tax calculation failed', ['message' => $e->getMessage()]);
-                throw new CheckoutException('We could not work out the tax for that address. Check the country and postcode.', 'postcode');
+                throw new CheckoutException(t('We could not work out the tax for that address. Check the country and postcode.'), 'postcode');
             }
             $tax = $result['tax_cents'];
             $calculation = $result['id'];
@@ -96,7 +97,7 @@ class CheckoutService
             }
         }
         if ($summary->totalCents() > 0 && ! $this->gateway->isConfigured()) {
-            throw new CheckoutException('Payments are not set up yet. Please try again later.');
+            throw new CheckoutException(t('Payments are not set up yet. Please try again later.'));
         }
 
         $quote = $this->quote($summary, $customer['country'], $customer['postcode']);
@@ -183,7 +184,7 @@ class CheckoutService
         } catch (Throwable $e) {
             Log::error('Stripe PaymentIntent could not be created', ['order' => $order->number, 'message' => $e->getMessage()]);
             $this->fulfillment->cancel($order, 'Payment could not be started');
-            throw $e instanceof CheckoutException ? $e : new CheckoutException('We could not start the payment. Please try again in a moment.');
+            throw $e instanceof CheckoutException ? $e : new CheckoutException(t('We could not start the payment. Please try again in a moment.'));
         }
 
         $order->payments()->create([
@@ -275,9 +276,11 @@ class CheckoutService
 
     private function newNumber(): string
     {
+        // No look-alike characters, so a number read over the phone is unambiguous.
+        $code = fn (int $length) => collect(range(1, $length))->map(fn () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[random_int(0, 31)])->implode('');
+        $store = app(StoreSettings::class)->store();
         do {
-            // No look-alike characters, so a number read over the phone is unambiguous.
-            $number = now()->format('ymd').'-'.collect(range(1, 6))->map(fn () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[random_int(0, 31)])->implode('');
+            $number = $store['number_prefix'].($store['number_style'] === 'code' ? $code(8) : now()->format('ymd').'-'.$code(6));
         } while (Order::query()->where('number', $number)->exists());
 
         return $number;

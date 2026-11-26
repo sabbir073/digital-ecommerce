@@ -4,10 +4,12 @@ namespace App\View\Composers;
 
 use App\Models\CartItem;
 use App\Models\Category;
-use App\Models\Menu;
 use App\Models\Setting;
 use App\Services\Chat\ChatSettings;
 use App\Services\Checkout\CartService;
+use App\Services\Content\Navigation;
+use App\Services\StoreSettings;
+use App\Services\UiText;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -19,6 +21,24 @@ class StorefrontComposer
     private ?array $shared = null;
 
     private ?object $sharedFor = null;
+
+    public function __construct(private readonly Navigation $navigation, private readonly StoreSettings $settings) {}
+
+    /**
+     * The header menu built in admin. Until one is built, the top-level categories are the menu.
+     *
+     * @return list<array{label:string, url:string, children:list<array{label:string, url:string}>}>
+     */
+    private function headerLinks(): array
+    {
+        $links = $this->navigation->items('header');
+        if ($links !== []) {
+            return $links;
+        }
+
+        return Category::query()->whereNull('parent_id')->orderBy('position')->get(['id', 'name', 'slug'])
+            ->map(fn (Category $c) => ['label' => $c->name, 'url' => url('/c/'.$c->slug), 'children' => []])->all();
+    }
 
     /**
      * The composer runs for every storefront view, partials included, so the
@@ -42,9 +62,20 @@ class StorefrontComposer
             'storeName' => Setting::get('store.name', config('app.name')),
             'footerText' => Setting::get('store.footer_text'),
             'announcement' => $this->announcement(),
-            'navCategories' => Category::query()->whereNull('parent_id')->orderBy('position')->get(['id', 'name', 'slug']),
-            'footerMenus' => Menu::query()->where('location', 'like', 'footer%')->with('items')->orderBy('location')->get(),
+            'navLinks' => $this->headerLinks(),
+            'footerMenus' => collect(['footer_1', 'footer_2', 'footer_3'])
+                ->map(fn (string $location) => ['name' => $this->navigation->name($location), 'items' => $this->navigation->items($location)])
+                ->filter(fn (array $menu) => $menu['items'] !== [])->values(),
             'cartCount' => $this->cartCount(),
+            'theme' => $this->settings->storefrontTheme(),
+            'currencyFormat' => StoreSettings::currencyFormat(),
+            'uiText' => UiText::forScripts(),
+            'storeContact' => array_filter([
+                'email' => (string) Setting::get('store.contact_email', ''),
+                'phone' => (string) Setting::get('store.contact_phone', ''),
+                'address' => (string) Setting::get('store.address', ''),
+            ]),
+            'checkoutFields' => $this->settings->checkoutFields(),
             'chat' => $this->chat(),
         ];
     }

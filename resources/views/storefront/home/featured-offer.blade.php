@@ -11,7 +11,7 @@
                 @if ($s['text'] ?: $page->product?->short_description)
                     <p class="max-w-md text-[#C4C8D0]">{{ $s['text'] ?: $page->product->short_description }}</p>
                 @endif
-                <a href="{{ $page->url() }}" class="btn btn-accent mt-2">{{ $s['button_label'] ?: 'See the offer' }}</a>
+                <a href="{{ $page->url() }}" class="btn btn-accent mt-2">{{ $s['button_label'] ?: t('See the offer') }}</a>
             </div>
             @if ($image)
                 <img src="{{ $image->sizeUrl(960) }}" srcset="{{ $image->srcset() }}" sizes="(min-width: 768px) 520px, 100vw" alt="{{ $image->alt ?: $page->product->name }}"

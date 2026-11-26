@@ -42,7 +42,7 @@ class CartController extends Controller
 
         try {
             if (! $product) {
-                throw new CheckoutException('This product is not available.', 'stock');
+                throw new CheckoutException(t('This product is not available.'), 'stock');
             }
 
             if (($data['intent'] ?? 'cart') === 'buy') {
@@ -83,12 +83,12 @@ class CartController extends Controller
 
     public function applyCoupon(Request $request): JsonResponse|RedirectResponse
     {
-        $data = $request->validate(['code' => ['required', 'string', 'max:60']], ['code.required' => 'Enter a code.']);
+        $data = $request->validate(['code' => ['required', 'string', 'max:60']], ['code.required' => t('Enter a code.')]);
         $cart = $request->boolean('buy') ? $this->carts->buyNowCart() : $this->carts->current();
 
         try {
             if (! $cart) {
-                throw new CheckoutException('Your cart is empty.', 'coupon');
+                throw new CheckoutException(t('Your cart is empty.'), 'coupon');
             }
             $this->carts->applyCoupon($cart, $data['code']);
         } catch (CheckoutException $e) {

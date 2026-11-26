@@ -25,10 +25,31 @@ class Blocks
      * Field types: text, textarea, richtext, toggle, select, image, video, images, reviews, datetime, url,
      * strings (list of lines), list (repeated group of fields), table.
      *
+     * Content pages (About, Contact, policies) use the same blocks without the ones that sell:
+     * no Order block, no Offer bar, no price in the hero, and reviews of the store only.
+     *
      * @return array<string, array{label:string, fields:list<array<string, mixed>>}>
      */
-    public static function library(): array
+    public static function library(string $for = 'selling'): array
     {
+        if ($for === 'content') {
+            $library = self::library();
+            unset($library['order'], $library['offer_bar']);
+            $drop = ['hero' => ['show_price'], 'reviews' => ['source', 'mode', 'review_ids']];
+            foreach ($drop as $type => $keys) {
+                $library[$type]['fields'] = array_values(array_filter($library[$type]['fields'], fn ($f) => ! in_array($f['key'], $keys, true)));
+            }
+            $library['hero']['fields'] = array_map(fn ($f) => $f['key'] === 'button_label' ? ['key' => 'button_label', 'label' => 'Button label', 'type' => 'text', 'max' => 40] : $f, $library['hero']['fields']);
+            array_splice($library['hero']['fields'], 4, 0, [['key' => 'button_url', 'label' => 'Button link', 'type' => 'url']]);
+            $library['contact_form'] = ['label' => 'Contact form', 'fields' => [
+                ['key' => 'heading', 'label' => 'Heading', 'type' => 'text', 'max' => 120, 'default' => 'Send us a message'],
+                ['key' => 'text', 'label' => 'Text above the form', 'type' => 'textarea', 'max' => 500],
+                ['key' => 'button_label', 'label' => 'Button label', 'type' => 'text', 'max' => 40, 'default' => 'Send message'],
+            ]];
+
+            return $library;
+        }
+
         $cards = fn (string $label) => [
             'key' => 'items', 'label' => $label, 'type' => 'list', 'min' => 2, 'max' => 4, 'itemLabel' => 'Card',
             'fields' => [
@@ -103,9 +124,9 @@ class Blocks
     }
 
     /** A new, empty block of the given type. */
-    public static function make(string $type, array $data = [], array $style = []): array
+    public static function make(string $type, array $data = [], array $style = [], string $for = 'selling'): array
     {
-        return self::normalizeBlock(['id' => (string) Str::ulid(), 'type' => $type, 'data' => $data, 'style' => $style]);
+        return self::normalizeBlock(['id' => (string) Str::ulid(), 'type' => $type, 'data' => $data, 'style' => $style], $for);
     }
 
     /**
@@ -115,8 +136,9 @@ class Blocks
      * @param  mixed  $blocks
      * @return list<array<string, mixed>>
      */
-    public static function normalize($blocks): array
+    public static function normalize($blocks, string $for = 'selling'): array
     {
+        $library = self::library($for);
         if (! is_array($blocks)) {
             return [];
         }
@@ -124,10 +146,10 @@ class Blocks
         $clean = [];
         $ids = [];
         foreach (array_slice(array_values($blocks), 0, 60) as $block) {
-            if (! is_array($block) || ! isset(self::library()[$block['type'] ?? ''])) {
+            if (! is_array($block) || ! isset($library[$block['type'] ?? ''])) {
                 continue;
             }
-            $block = self::normalizeBlock($block);
+            $block = self::normalizeBlock($block, $for);
             if (isset($ids[$block['id']])) {
                 $block['id'] = (string) Str::ulid();
             }
@@ -138,7 +160,7 @@ class Blocks
         return $clean;
     }
 
-    private static function normalizeBlock(array $block): array
+    private static function normalizeBlock(array $block, string $for = 'selling'): array
     {
         $type = $block['type'];
         $data = is_array($block['data'] ?? null) ? $block['data'] : [];
@@ -146,7 +168,7 @@ class Blocks
         $id = is_string($block['id'] ?? null) && preg_match('/^[A-Za-z0-9_-]{6,40}$/', $block['id']) ? $block['id'] : (string) Str::ulid();
 
         $out = [];
-        foreach (self::library()[$type]['fields'] as $field) {
+        foreach (self::library($for)[$type]['fields'] as $field) {
             $out[$field['key']] = self::value($field, $data[$field['key']] ?? null, array_key_exists($field['key'], $data));
         }
 
@@ -172,6 +194,24 @@ class Blocks
         };
     }
 
+    /**
+     * Clean one set of values against a list of fields. Used for content that is edited with the
+     * same field editor as blocks, such as the home page sections.
+     *
+     * @param  list<array<string, mixed>>  $fields
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public static function clean(array $fields, array $data): array
+    {
+        $out = [];
+        foreach ($fields as $field) {
+            $out[$field['key']] = self::value($field, $data[$field['key']] ?? null, array_key_exists($field['key'], $data));
+        }
+
+        return $out;
+    }
+
     /** @param array<string, mixed> $field */
     private static function value(array $field, mixed $value, bool $given): mixed
     {
@@ -191,8 +231,11 @@ class Blocks
             case 'image':
             case 'video':
                 return is_numeric($value) && (int) $value > 0 ? (int) $value : null;
+            case 'pick':
+                return is_numeric($value) && (int) $value > 0 ? (int) $value : null;
             case 'images':
             case 'reviews':
+            case 'picks':
                 $ids = is_array($value) ? array_values(array_unique(array_filter(array_map(fn ($v) => is_numeric($v) ? (int) $v : 0, $value)))) : [];
 
                 return array_slice($ids, 0, $field['max'] ?? 12);
@@ -284,13 +327,21 @@ class Blocks
      * @param  list<array<string, mixed>>  $blocks
      * @return list<string>
      */
-    public static function problems(array $blocks): array
+    public static function problems(array $blocks, string $for = 'selling'): array
     {
         $problems = [];
+        $library = self::library($for);
         $visible = array_values(array_filter($blocks, fn ($b) => ! ($b['hidden'] ?? false)));
         $orders = count(array_filter($visible, fn ($b) => $b['type'] === 'order'));
 
-        if ($orders === 0) {
+        if ($for === 'content') {
+            if ($visible === []) {
+                $problems[] = 'Add at least one block. An empty page cannot go live.';
+            }
+            if (count(array_filter($visible, fn ($b) => $b['type'] === 'contact_form')) > 1) {
+                $problems[] = 'Keep only one Contact form on a page.';
+            }
+        } elseif ($orders === 0) {
             $problems[] = 'Add an Order block. Customers pay in it, so a page cannot go live without one.';
         } elseif ($orders > 1) {
             $problems[] = 'Keep only one Order block. A page can have exactly one.';
@@ -306,7 +357,7 @@ class Blocks
                 }
             });
             if ($found) {
-                $labels[] = self::library()[$block['type']]['label'];
+                $labels[] = $library[$block['type']]['label'];
             }
         }
         if ($labels !== []) {
@@ -318,7 +369,7 @@ class Blocks
                 $problems[] = 'The Gallery block needs at least two images.';
             }
             if (in_array($block['type'], ['benefits', 'trust'], true) && count($block['data']['items']) < 2) {
-                $problems[] = self::library()[$block['type']]['label'].' needs at least two cards.';
+                $problems[] = $library[$block['type']]['label'].' needs at least two cards.';
             }
         }
 

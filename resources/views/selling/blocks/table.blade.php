@@ -6,7 +6,7 @@
                 <h2 class="section-heading" @edit('heading')>{{ $d['heading'] }}</h2>
             @endif
             {{-- Wide tables scroll inside their own box instead of stretching the page. --}}
-            <div class="sp-table-wrap mt-6" tabindex="0" role="region" aria-label="{{ $d['heading'] ?: 'Comparison table' }}">
+            <div class="sp-table-wrap mt-6" tabindex="0" role="region" aria-label="{{ $d['heading'] ?: t('Comparison table') }}">
                 <table class="sp-table">
                     <thead>
                         <tr>

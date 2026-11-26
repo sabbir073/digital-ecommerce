@@ -89,7 +89,7 @@ class ReviewController extends Controller
         abort_unless($item?->order?->paid_at && $item->product, 404);
 
         if ($invitation->used_at || Review::query()->where('order_item_id', $item->id)->exists()) {
-            return back()->with('error', 'You have already reviewed this item. Thank you.');
+            return back()->with('error', t('You have already reviewed this item. Thank you.'));
         }
 
         return $this->take($request, $item->product, $item, null, $invitation);
@@ -125,7 +125,7 @@ class ReviewController extends Controller
             ]);
         }
 
-        return redirect()->to(url()->previous().'#review-'.$review->id)->with('success', 'Thanks. Our team will look at this review.');
+        return redirect()->to(url()->previous().'#review-'.$review->id)->with('success', t('Thanks. Our team will look at this review.'));
     }
 
     public const REPORT_REASONS = [
@@ -142,7 +142,7 @@ class ReviewController extends Controller
         $back = fn () => redirect()->to(Str::before(url()->previous(), '#').'#write-review');
 
         if (! $verified && ! $this->reviews->open()) {
-            return $back()->with('error', 'Only customers who bought from us can write a review. Sign in to the account you ordered with, or use the link in your review email.');
+            return $back()->with('error', t('Only customers who bought from us can write a review. Sign in to the account you ordered with, or use the link in your review email.'));
         }
 
         $user = Auth::guard('web')->user();
@@ -156,15 +156,15 @@ class ReviewController extends Controller
             'photos' => ['nullable', 'array', 'max:'.ReviewService::MAX_PHOTOS],
             'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
         ], [
-            'rating.required' => 'Choose a star rating.',
-            'body.required' => 'Write your review.',
-            'body.min' => 'Please write at least 20 characters.',
-            'display_name.required' => 'Enter the name to show with your review.',
-            'email.required' => 'Enter your email. It is not shown publicly.',
-            'photos.max' => 'You can add up to 5 photos.',
-            'photos.*.image' => 'Photos must be JPG, PNG or WebP images.',
-            'photos.*.mimes' => 'Photos must be JPG, PNG or WebP images.',
-            'photos.*.max' => 'Each photo can be up to 8 MB.',
+            'rating.required' => t('Choose a star rating.'),
+            'body.required' => t('Write your review.'),
+            'body.min' => t('Please write at least 20 characters.'),
+            'display_name.required' => t('Enter the name to show with your review.'),
+            'email.required' => t('Enter your email. It is not shown publicly.'),
+            'photos.max' => t('You can add up to 5 photos.'),
+            'photos.*.image' => t('Photos must be JPG, PNG or WebP images.'),
+            'photos.*.mimes' => t('Photos must be JPG, PNG or WebP images.'),
+            'photos.*.max' => t('Each photo can be up to 8 MB.'),
         ]);
         if ($validator->fails()) {
             return $back()->withErrors($validator)->withInput($request->except('photos'));
@@ -177,11 +177,11 @@ class ReviewController extends Controller
         $limits = ['review-ip|'.$request->ip() => 5] + ($email !== '' ? ['review-email|'.$email => 3] : []);
         foreach ($limits as $key => $max) {
             if (RateLimiter::tooManyAttempts($key, $max)) {
-                return $back()->withInput($request->except('photos'))->with('error', 'You have sent several reviews in a short time. Please try again in an hour.');
+                return $back()->withInput($request->except('photos'))->with('error', t('You have sent several reviews in a short time. Please try again in an hour.'));
             }
         }
         if (! $this->captcha->passes($request->input('cf-turnstile-response'), $request->ip())) {
-            return $back()->withInput($request->except('photos'))->with('error', 'Please complete the "I am human" check and send your review again.');
+            return $back()->withInput($request->except('photos'))->with('error', t('Please complete the "I am human" check and send your review again.'));
         }
         foreach (array_keys($limits) as $key) {
             RateLimiter::hit($key, 3600);
@@ -192,7 +192,7 @@ class ReviewController extends Controller
         try {
             $review = $this->reviews->submit($product, $data, $spam ? [] : $request->file('photos', []), $user, $request->ip(), $item, $order, $invitation, $spam);
         } catch (UniqueConstraintViolationException) {
-            return $back()->with('error', 'You have already reviewed this item. Thank you.');
+            return $back()->with('error', t('You have already reviewed this item. Thank you.'));
         }
 
         $message = $review->status === Review::APPROVED

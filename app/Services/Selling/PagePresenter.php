@@ -18,7 +18,7 @@ class PagePresenter
      * @param  list<array<string, mixed>>  $blocks
      * @return array{blocks: list<array<string, mixed>>, media: Collection<int, Media>, reviews: array<string, Collection<int, Review>>, offers: list<array<string, mixed>>, hasOrder: bool}
      */
-    public function present(SellingPage $page, array $blocks, bool $builder = false): array
+    public function present(?SellingPage $page, array $blocks, bool $builder = false): array
     {
         $visible = [];
         foreach ($blocks as $block) {
@@ -53,11 +53,12 @@ class PagePresenter
             if ($block['type'] !== 'reviews') {
                 continue;
             }
-            // Approved reviews only, of the page's product or of the store as a whole.
-            $scope = fn ($q) => ($block['data']['source'] ?? 'product') === 'store' ? $q->whereNull('product_id') : $q->where('product_id', $page->product_id);
+            // Approved reviews only, of the page's product or of the store as a whole. A content page has no product.
+            $productId = $page?->product_id;
+            $scope = fn ($q) => ! $productId || ($block['data']['source'] ?? 'product') === 'store' ? $q->whereNull('product_id') : $q->where('product_id', $productId);
             $query = Review::query()->approved()->with('photos');
-            $reviews[$block['id']] = $block['data']['mode'] === 'picked'
-                ? $query->where(fn ($q) => $q->where('product_id', $page->product_id)->orWhereNull('product_id'))->whereIn('id', $block['data']['review_ids'])->get()
+            $reviews[$block['id']] = $productId && ($block['data']['mode'] ?? 'newest') === 'picked'
+                ? $query->where(fn ($q) => $q->where('product_id', $productId)->orWhereNull('product_id'))->whereIn('id', $block['data']['review_ids'])->get()
                     ->sortBy(fn (Review $r) => array_search($r->id, $block['data']['review_ids'], true))->values()
                 : $scope($query)->orderByDesc('pinned')->orderByRaw('COALESCE(reviewed_at, created_at) DESC')->orderByDesc('id')->limit((int) $block['data']['limit'])->get();
         }
@@ -66,7 +67,7 @@ class PagePresenter
             'blocks' => $visible,
             'media' => $media,
             'reviews' => $reviews,
-            'offers' => $this->offers($page),
+            'offers' => $page ? $this->offers($page) : [],
             'hasOrder' => collect($visible)->contains(fn ($b) => $b['type'] === 'order' && ! ($b['hidden'] ?? false)),
         ];
     }

@@ -3,12 +3,20 @@
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ChatController;
+use App\Http\Controllers\Admin\ContentPageController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EmailTemplateController;
+use App\Http\Controllers\Admin\HomePageController;
+use App\Http\Controllers\Admin\InterfaceTextController;
 use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\ProductController;
@@ -18,6 +26,8 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SecuritySettingsController;
 use App\Http\Controllers\Admin\SellingPageController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\StoreSettingsController;
+use App\Http\Controllers\Admin\ThemeController;
 use Illuminate\Support\Facades\Route;
 
 // Registered in bootstrap/app.php with the /admin prefix and the admin. name prefix.
@@ -110,10 +120,22 @@ Route::middleware('admin.auth')->group(function () {
 
     // Orders
     Route::get('orders', [OrderController::class, 'index'])->middleware('permission:orders,view')->name('orders.index');
+    Route::get('orders/export', [OrderController::class, 'export'])->middleware('permission:orders,view')->name('orders.export');
     Route::get('orders/{order}', [OrderController::class, 'show'])->middleware('permission:orders,view')->name('orders.show');
+    Route::post('orders/{order}/refund', [OrderController::class, 'refund'])->middleware(['permission:refunds,create', 'throttle:20,1'])->name('orders.refund');
+    Route::post('orders/{order}/resend', [OrderController::class, 'resend'])->middleware(['permission:orders,edit', 'throttle:20,1'])->name('orders.resend');
+    Route::post('orders/{order}/downloads/renew', [OrderController::class, 'renewDownloads'])->middleware('permission:orders,edit')->name('orders.downloads.renew');
+    Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->middleware('permission:orders,edit')->name('orders.cancel');
+    Route::post('orders/{order}/notes', [OrderController::class, 'note'])->middleware('permission:orders,edit')->name('orders.note');
+
+    // Customers
+    Route::get('customers', [CustomerController::class, 'index'])->middleware('permission:customers,view')->name('customers.index');
+    Route::get('customers/export', [CustomerController::class, 'export'])->middleware('permission:customers,view')->name('customers.export');
+    Route::get('customers/view', [CustomerController::class, 'show'])->middleware('permission:customers,view')->name('customers.show');
 
     // Coupons
     Route::get('reviews', [ReviewController::class, 'index'])->middleware('permission:reviews,view')->name('reviews.index');
+    Route::get('reviews/export', [ReviewController::class, 'export'])->middleware('permission:reviews,view')->name('reviews.export');
     Route::get('reviews/import-format', [ReviewController::class, 'sample'])->middleware('permission:reviews,view')->name('reviews.sample');
     Route::get('reviews/settings', [ReviewController::class, 'settings'])->middleware('permission:reviews,view')->name('reviews.settings');
     Route::put('reviews/settings', [ReviewController::class, 'saveSettings'])->middleware('permission:reviews,edit')->name('reviews.settings.update');
@@ -135,6 +157,53 @@ Route::middleware('admin.auth')->group(function () {
     Route::post('coupons', [CouponController::class, 'store'])->middleware('permission:coupons,create')->name('coupons.store');
     Route::put('coupons/{coupon}', [CouponController::class, 'update'])->middleware('permission:coupons,edit')->name('coupons.update');
     Route::delete('coupons/{coupon}', [CouponController::class, 'destroy'])->middleware('permission:coupons,delete')->name('coupons.destroy');
+
+    // Content: home page, pages, navigation, blog, contact messages
+    Route::get('home', [HomePageController::class, 'edit'])->middleware('permission:content,view')->name('home.edit');
+    Route::put('home', [HomePageController::class, 'update'])->middleware('permission:content,edit')->name('home.update');
+
+    Route::get('pages', [ContentPageController::class, 'index'])->middleware('permission:content,view')->name('pages.index');
+    Route::post('pages', [ContentPageController::class, 'store'])->middleware('permission:content,create')->name('pages.store');
+    Route::put('pages/{page}', [ContentPageController::class, 'update'])->middleware('permission:content,edit')->name('pages.update');
+    Route::get('pages/{page}/builder', [ContentPageController::class, 'builder'])->middleware('permission:content,view')->name('pages.builder');
+    Route::get('pages/{page}/canvas', [ContentPageController::class, 'canvas'])->middleware('permission:content,view')->name('pages.canvas');
+    Route::post('pages/{page}/render', [ContentPageController::class, 'render'])->middleware('permission:content,view')->name('pages.render');
+    Route::put('pages/{page}/draft', [ContentPageController::class, 'saveDraft'])->middleware('permission:content,edit')->name('pages.draft');
+    Route::post('pages/{page}/publish', [ContentPageController::class, 'publish'])->middleware('permission:content,publish')->name('pages.publish');
+    Route::post('pages/{page}/unpublish', [ContentPageController::class, 'unpublish'])->middleware('permission:content,publish')->name('pages.unpublish');
+    Route::delete('pages/{page}', [ContentPageController::class, 'destroy'])->middleware('permission:content,delete')->name('pages.destroy');
+
+    Route::get('navigation', [MenuController::class, 'index'])->middleware('permission:content,view')->name('navigation.index');
+    Route::put('navigation/announcement', [MenuController::class, 'saveAnnouncement'])->middleware('permission:content,edit')->name('navigation.announcement');
+    Route::put('navigation/{location}', [MenuController::class, 'update'])->middleware('permission:content,edit')->name('navigation.update');
+
+    Route::get('blog', [BlogController::class, 'index'])->middleware('permission:blog,view')->name('blog.index');
+    Route::get('blog/create', [BlogController::class, 'create'])->middleware('permission:blog,create')->name('blog.create');
+    Route::post('blog', [BlogController::class, 'store'])->middleware('permission:blog,create')->name('blog.store');
+    Route::get('blog/{post}', [BlogController::class, 'edit'])->middleware('permission:blog,view')->name('blog.edit');
+    Route::put('blog/{post}', [BlogController::class, 'update'])->middleware('permission:blog,edit')->name('blog.update');
+    Route::delete('blog/{post}', [BlogController::class, 'destroy'])->middleware('permission:blog,delete')->name('blog.destroy');
+
+    Route::get('messages', [MessageController::class, 'index'])->middleware('permission:chat,view')->name('messages.index');
+    Route::put('messages/{message}', [MessageController::class, 'update'])->middleware('permission:chat,edit')->name('messages.update');
+    Route::delete('messages/{message}', [MessageController::class, 'destroy'])->middleware('permission:chat,delete')->name('messages.destroy');
+
+    // Store settings and theme
+    Route::get('settings/store', [StoreSettingsController::class, 'edit'])->middleware('permission:settings,view')->name('settings.store');
+    Route::put('settings/store/details', [StoreSettingsController::class, 'updateDetails'])->middleware('permission:settings,edit')->name('settings.store.details');
+    Route::put('settings/store/checkout', [StoreSettingsController::class, 'updateCheckout'])->middleware('permission:settings,edit')->name('settings.store.checkout');
+    Route::put('settings/store/stock', [StoreSettingsController::class, 'updateStock'])->middleware('permission:settings,edit')->name('settings.store.stock');
+    Route::put('settings/store/maintenance', [StoreSettingsController::class, 'updateMaintenance'])->middleware('permission:settings,edit')->name('settings.store.maintenance');
+    Route::get('settings/theme', [ThemeController::class, 'edit'])->middleware('permission:theme,view')->name('settings.theme');
+    Route::put('settings/theme', [ThemeController::class, 'update'])->middleware('permission:theme,edit')->name('settings.theme.update');
+
+    Route::get('settings/emails', [EmailTemplateController::class, 'index'])->middleware('permission:settings,view')->name('settings.emails');
+    Route::put('settings/emails/{key}', [EmailTemplateController::class, 'update'])->middleware('permission:settings,edit')->name('settings.emails.update');
+    Route::delete('settings/emails/{key}', [EmailTemplateController::class, 'reset'])->middleware('permission:settings,edit')->name('settings.emails.reset');
+    Route::post('settings/emails/{key}/preview', [EmailTemplateController::class, 'preview'])->middleware('permission:settings,view')->name('settings.emails.preview');
+
+    Route::get('settings/text', [InterfaceTextController::class, 'index'])->middleware('permission:settings,view')->name('settings.text');
+    Route::put('settings/text', [InterfaceTextController::class, 'update'])->middleware('permission:settings,edit')->name('settings.text.update');
 
     // Payment settings (Stripe keys are Super Admin only, enforced in the controller)
     Route::get('settings/payments', [PaymentSettingsController::class, 'edit'])->middleware('permission:settings,view')->name('settings.payments');

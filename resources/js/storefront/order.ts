@@ -1,3 +1,4 @@
+import { t } from './shared';
 // Order confirmation: wait for Stripe's webhook to mark the order paid, then reload to show the downloads.
 
 function init(): void {
@@ -20,8 +21,8 @@ function init(): void {
                 return;
             }
             if (data.failed) {
-                if (title) title.textContent = 'The payment did not go through';
-                if (text) text.textContent = `${data.message ?? ''} Nothing was charged. You can try again with another card.`.trim();
+                if (title) title.textContent = t('The payment did not go through');
+                if (text) text.textContent = ((data.message ?? '') + ' ' + t('Nothing was charged. You can try again with another card.')).trim();
                 if (retry) retry.hidden = false;
                 if (spinner) spinner.hidden = true;
                 return;
@@ -32,8 +33,8 @@ function init(): void {
 
         const waited = Date.now() - started;
         if (waited > 120_000) {
-            if (title) title.textContent = 'Still confirming your payment';
-            if (text) text.textContent = 'This is taking longer than usual. You can close this page: we will email your download links as soon as the payment is confirmed.';
+            if (title) title.textContent = t('Still confirming your payment');
+            if (text) text.textContent = t('This is taking longer than usual. You can close this page: we will email your download links as soon as the payment is confirmed.');
             if (spinner) spinner.hidden = true;
             return;
         }
