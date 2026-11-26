@@ -1,5 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import Add from '@mui/icons-material/Add';
+import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
+import DashboardCustomizeOutlined from '@mui/icons-material/DashboardCustomizeOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import OpenInNew from '@mui/icons-material/OpenInNew';
@@ -121,7 +123,11 @@ export default function SellingPagesIndex({ pages, products }: { pages: PageRow[
                                             {page.status === 'published' && (
                                                 <Tooltip title="Open the live page"><IconButton aria-label={`Open ${page.name}`} component="a" href={page.url} target="_blank" rel="noopener"><OpenInNew fontSize="small" /></IconButton></Tooltip>
                                             )}
-                                            <Tooltip title="Edit"><IconButton aria-label={`Edit ${page.name}`} component={RouterLink} href={`/admin/selling-pages/${page.id}`}><EditOutlined fontSize="small" /></IconButton></Tooltip>
+                                            <Tooltip title="Open builder"><IconButton aria-label={`Open the builder for ${page.name}`} component={RouterLink} href={`/admin/selling-pages/${page.id}/builder`}><DashboardCustomizeOutlined fontSize="small" /></IconButton></Tooltip>
+                                            <Tooltip title="Settings and packs"><IconButton aria-label={`Edit settings of ${page.name}`} component={RouterLink} href={`/admin/selling-pages/${page.id}`}><EditOutlined fontSize="small" /></IconButton></Tooltip>
+                                            {can('selling_pages', 'create') && (
+                                                <Tooltip title="Duplicate"><IconButton aria-label={`Duplicate ${page.name}`} onClick={() => router.post(`/admin/selling-pages/${page.id}/duplicate`)}><ContentCopyOutlined fontSize="small" /></IconButton></Tooltip>
+                                            )}
                                             {can('selling_pages', 'delete') && (
                                                 <Tooltip title="Delete"><IconButton aria-label={`Delete ${page.name}`} onClick={() => setDeleting(page)}><DeleteOutlined fontSize="small" /></IconButton></Tooltip>
                                             )}

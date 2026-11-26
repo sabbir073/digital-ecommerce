@@ -18,16 +18,19 @@ class PagePresenter
      * @param  list<array<string, mixed>>  $blocks
      * @return array{blocks: list<array<string, mixed>>, media: Collection<int, Media>, reviews: array<string, Collection<int, Review>>, offers: list<array<string, mixed>>, hasOrder: bool}
      */
-    public function present(SellingPage $page, array $blocks): array
+    public function present(SellingPage $page, array $blocks, bool $builder = false): array
     {
         $visible = [];
         foreach ($blocks as $block) {
-            if ($block['hidden'] ?? false) {
-                continue;
-            }
-            // A countdown that has passed hides the Offer bar. It never resets itself.
-            if ($block['type'] === 'offer_bar' && ($block['data']['ends_at'] ?? null) && Carbon::parse($block['data']['ends_at'])->isPast()) {
-                continue;
+            // The builder shows everything, so hidden and expired blocks can still be selected and edited.
+            if (! $builder) {
+                if ($block['hidden'] ?? false) {
+                    continue;
+                }
+                // A countdown that has passed hides the Offer bar. It never resets itself.
+                if ($block['type'] === 'offer_bar' && ($block['data']['ends_at'] ?? null) && Carbon::parse($block['data']['ends_at'])->isPast()) {
+                    continue;
+                }
             }
             $visible[] = $block;
         }
@@ -61,7 +64,7 @@ class PagePresenter
             'media' => $media,
             'reviews' => $reviews,
             'offers' => $this->offers($page),
-            'hasOrder' => collect($visible)->contains(fn ($b) => $b['type'] === 'order'),
+            'hasOrder' => collect($visible)->contains(fn ($b) => $b['type'] === 'order' && ! ($b['hidden'] ?? false)),
         ];
     }
 

@@ -4,16 +4,23 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
+use App\Models\Offer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\SellingPage;
+use App\Models\SellingPageVersion;
 use App\Models\Variant;
 use App\Services\ActivityLogger;
+use App\Services\Payments\PaymentGateway;
+use App\Services\Selling\OfferPricing;
+use App\Services\Selling\PagePresenter;
 use App\Support\Blocks;
 use App\Support\Money;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -21,11 +28,17 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 /** Selling pages in admin: the list, page settings, packs, content and publishing (PRD section 5). */
 class SellingPageController extends Controller
 {
-    public function __construct(private ActivityLogger $activity) {}
+    public function __construct(
+        private ActivityLogger $activity,
+        private PagePresenter $presenter,
+        private OfferPricing $pricing,
+        private PaymentGateway $gateway,
+    ) {}
 
     public function index(): Response
     {
@@ -92,16 +105,6 @@ class SellingPageController extends Controller
         $page->load(['offers.items', 'product:id,name,status']);
         $blocks = Blocks::normalize($page->draft_blocks ?? []);
 
-        $mediaIds = [];
-        array_walk_recursive($blocks, function ($value, $key) use (&$mediaIds) {
-            if (in_array($key, ['image_id', 'poster_id', 'video_id'], true) && $value) {
-                $mediaIds[] = $value;
-            }
-        });
-        foreach ($blocks as $block) {
-            array_push($mediaIds, ...($block['data']['image_ids'] ?? []));
-        }
-
         return Inertia::render('SellingPages/Edit', [
             'page' => [
                 'id' => $page->id,
@@ -114,7 +117,6 @@ class SellingPageController extends Controller
                 'previewUrl' => $page->url().'?preview=1',
                 'hasUnpublishedChanges' => $page->isPublished() && $blocks != Blocks::normalize($page->published_blocks),
             ],
-            'blocks' => $blocks,
             'offers' => $page->offers->map(fn ($offer) => [
                 'id' => $offer->id,
                 'label' => $offer->label,
@@ -123,16 +125,116 @@ class SellingPageController extends Controller
                 'is_default' => $offer->is_default,
                 'items' => $offer->items->map(fn ($item) => ['product_id' => $item->product_id, 'variant_id' => $item->variant_id, 'quantity' => $item->quantity])->all(),
             ])->all(),
-            'library' => Blocks::library(),
             'products' => $this->productOptions(),
-            'media' => Media::query()->whereIn('id', array_unique($mediaIds))->get()->map->toAdminArray()->keyBy('id'),
-            'reviews' => Review::query()->approved()->where('product_id', $page->product_id)->latest('id')->limit(200)->get()
-                ->map(fn (Review $r) => ['id' => $r->id, 'label' => $r->display_name.' · '.$r->rating.'/5 · '.Str::limit($r->body, 60)]),
+            'blockCount' => count($blocks),
             'problems' => $this->problems($page, $blocks),
         ]);
     }
 
-    /** Save the draft: settings, packs and content. Customers keep seeing the published version. */
+    /** The drag-and-drop builder for the page content (PRD section 5). */
+    public function builder(SellingPage $page): Response
+    {
+        $blocks = Blocks::normalize($page->draft_blocks ?? []);
+
+        return Inertia::render('SellingPages/Builder', [
+            'page' => [
+                'id' => $page->id,
+                'name' => $page->name,
+                'status' => $page->status,
+                'url' => $page->url(),
+                'previewUrl' => $page->url().'?preview=1',
+                'canvasUrl' => route('admin.selling-pages.canvas', $page),
+                'hasUnpublishedChanges' => $page->isPublished() && $blocks != Blocks::normalize($page->published_blocks),
+            ],
+            'blocks' => $blocks,
+            'library' => Blocks::library(),
+            'media' => $this->media($blocks),
+            'reviews' => Review::query()->approved()->where('product_id', $page->product_id)->latest('id')->limit(200)->get()
+                ->map(fn (Review $r) => ['id' => $r->id, 'label' => $r->display_name.' · '.$r->rating.'/5 · '.Str::limit($r->body, 60)]),
+            'problems' => $this->problems($page, $blocks),
+            'versions' => $this->versions($page),
+        ]);
+    }
+
+    /** The page the builder shows in its canvas: the draft, drawn with the real storefront templates. */
+    public function canvas(SellingPage $page): HttpResponse
+    {
+        abort_unless($page->product, 404);
+
+        return response()
+            ->view('selling.page', $this->canvasData($page, Blocks::normalize($page->draft_blocks ?? [])))
+            ->header('Cache-Control', 'no-store, private');
+    }
+
+    /** Draw the blocks the builder is holding, without saving them, so the canvas follows every edit. */
+    public function render(Request $request, SellingPage $page): JsonResponse
+    {
+        abort_unless($page->product, 404);
+        $request->validate(['blocks' => ['present', 'array', 'max:60']]);
+        $blocks = Blocks::normalize($request->input('blocks'));
+
+        return response()->json(['html' => view('selling._blocks', $this->canvasData($page, $blocks))->render()]);
+    }
+
+    /** Autosave from the builder. Customers keep seeing the published version. */
+    public function saveDraft(Request $request, SellingPage $page): JsonResponse
+    {
+        $request->validate(['blocks' => ['present', 'array', 'max:60']]);
+        $blocks = Blocks::normalize($request->input('blocks'));
+        $page->update(['draft_blocks' => $blocks]);
+
+        return response()->json([
+            'problems' => $this->problems($page, $blocks),
+            'hasUnpublishedChanges' => $page->isPublished() && $blocks != Blocks::normalize($page->published_blocks),
+        ]);
+    }
+
+    /** Put an earlier published version back as the draft. It goes live only when published again. */
+    public function restore(SellingPage $page, SellingPageVersion $version): JsonResponse
+    {
+        abort_unless($version->selling_page_id === $page->id, 404);
+        $blocks = Blocks::normalize($version->blocks);
+        $page->update(['draft_blocks' => $blocks]);
+        $this->activity->log('edit', 'selling_pages', $page, $page->name, ['restored_version' => $version->published_at?->toDateTimeString()]);
+
+        return response()->json([
+            'blocks' => $blocks,
+            'media' => $this->media($blocks),
+            'problems' => $this->problems($page, $blocks),
+            'hasUnpublishedChanges' => $page->isPublished() && $blocks != Blocks::normalize($page->published_blocks),
+        ]);
+    }
+
+    /** A new draft page with the same content and packs. */
+    public function duplicate(SellingPage $page): RedirectResponse
+    {
+        $page->load('offers.items');
+        $name = Str::limit($page->name, 113, '').' (copy)';
+
+        $copy = DB::transaction(function () use ($page, $name) {
+            $copy = SellingPage::create([
+                'name' => $name,
+                'slug' => $this->uniqueSlug($name),
+                'product_id' => $page->product_id,
+                'status' => SellingPage::DRAFT,
+                'draft_blocks' => Blocks::normalize($page->draft_blocks ?? []),
+            ]);
+            foreach ($page->offers as $offer) {
+                $new = $copy->offers()->create($offer->only(['label', 'price_cents', 'note', 'is_default', 'position']));
+                foreach ($offer->items as $item) {
+                    $new->items()->create($item->only(['product_id', 'variant_id', 'quantity', 'position']));
+                }
+            }
+
+            return $copy;
+        });
+
+        $this->activity->log('create', 'selling_pages', $copy, $copy->name, ['copied_from' => $page->name]);
+
+        return redirect()->route('admin.selling-pages.edit', $copy)->with('success', 'Page duplicated as a draft.');
+    }
+
+    /** Save the page settings and packs. The content is saved by the builder. */
     public function update(Request $request, SellingPage $page): RedirectResponse
     {
         $request->merge(['slug' => Str::slug((string) $request->input('slug'))]);
@@ -141,7 +243,6 @@ class SellingPageController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'slug' => ['required', 'string', 'max:120', Rule::unique('selling_pages', 'slug')->ignore($page->id)],
             'product_id' => ['required', 'integer', Rule::exists('products', 'id')],
-            'blocks' => ['present', 'array', 'max:60'],
             'offers' => ['required', 'array', 'min:1', 'max:4'],
             'offers.*.label' => ['required', 'string', 'max:80'],
             'offers.*.price' => ['required', 'numeric', 'min:0', 'max:999999.99'],
@@ -182,7 +283,6 @@ class SellingPageController extends Controller
                 'name' => $data['name'],
                 'slug' => $data['slug'],
                 'product_id' => $data['product_id'],
-                'draft_blocks' => Blocks::normalize($data['blocks']),
             ]);
 
             $defaultSet = false;
@@ -208,7 +308,7 @@ class SellingPageController extends Controller
 
         $this->activity->log('edit', 'selling_pages', $page, $page->name);
 
-        return back()->with('success', 'Draft saved.');
+        return back()->with('success', 'Saved.');
     }
 
     public function publish(SellingPage $page): RedirectResponse
@@ -272,6 +372,63 @@ class SellingPageController extends Controller
         }
 
         return $problems;
+    }
+
+    /**
+     * Everything the storefront templates need to draw the draft inside the builder.
+     *
+     * @param  list<array<string, mixed>>  $blocks
+     * @return array<string, mixed>
+     */
+    private function canvasData(SellingPage $page, array $blocks): array
+    {
+        $page->loadMissing('product.images');
+        $data = $this->presenter->present($page, $blocks, builder: true);
+        $default = collect($data['offers'])->firstWhere('default', true);
+        $ready = $this->gateway->isConfigured();
+
+        return $data + [
+            'page' => $page,
+            'product' => $page->product,
+            'builder' => true,
+            'preview' => false,
+            'summary' => $default ? $this->pricing->summary(Offer::find($default['id']), null) : null,
+            'coupon' => null,
+            'countries' => config('countries'),
+            'ready' => $ready,
+            'testMode' => $ready && $this->gateway->isTestMode(),
+            'config' => [],
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $blocks
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function media(array $blocks)
+    {
+        $ids = [];
+        foreach ($blocks as $block) {
+            foreach (['image_id', 'poster_id', 'video_id'] as $key) {
+                if (! empty($block['data'][$key])) {
+                    $ids[] = $block['data'][$key];
+                }
+            }
+            array_push($ids, ...($block['data']['image_ids'] ?? []));
+        }
+
+        return Media::query()->whereIn('id', array_unique($ids))->get()->map->toAdminArray()->keyBy('id');
+    }
+
+    /** @return list<array{id:int, publishedAt:?string, by:?string, blocks:int}> */
+    private function versions(SellingPage $page): array
+    {
+        return $page->versions()->with('publisher:id,name')->limit(SellingPage::KEEP_VERSIONS)->get()->map(fn (SellingPageVersion $v) => [
+            'id' => $v->id,
+            'publishedAt' => $v->published_at?->toIso8601String(),
+            'by' => $v->publisher?->name,
+            'blocks' => count($v->blocks ?? []),
+        ])->all();
     }
 
     private function uniqueSlug(string $name): string

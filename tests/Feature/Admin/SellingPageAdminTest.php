@@ -18,7 +18,6 @@ class SellingPageAdminTest extends AdminTestCase
             'name' => $page->name,
             'slug' => $page->slug,
             'product_id' => $page->product_id,
-            'blocks' => $page->draft_blocks,
             'offers' => [['label' => 'One pack', 'price' => '19.00', 'note' => 'Most popular', 'is_default' => true, 'items' => [['product_id' => $page->product_id, 'variant_id' => null, 'quantity' => 1]]]],
         ];
     }
@@ -43,7 +42,9 @@ class SellingPageAdminTest extends AdminTestCase
         $this->get('/p/preset-launch')->assertNotFound();
 
         $this->signIn($this->makeAdmin('admin'))->get("/admin/selling-pages/{$page->id}")->assertInertia(fn (AssertableInertia $p) => $p
-            ->component('SellingPages/Edit')->has('blocks', 5)->has('offers', 1)->has('library.hero.fields')->has('problems', 1));
+            ->component('SellingPages/Edit')->where('blockCount', 5)->has('offers', 1)->has('problems', 1));
+        $this->get("/admin/selling-pages/{$page->id}/builder")->assertInertia(fn (AssertableInertia $p) => $p
+            ->component('SellingPages/Builder')->has('blocks', 5)->has('library.hero.fields')->has('problems', 1)->has('versions', 0));
     }
 
     public function test_a_page_cannot_be_published_with_placeholder_text_or_without_one_order_block(): void
@@ -54,20 +55,22 @@ class SellingPageAdminTest extends AdminTestCase
         $this->signIn($admin)->post("/admin/selling-pages/{$page->id}/publish")->assertSessionHas('error');
         $this->assertSame('draft', $page->refresh()->status);
 
+        $this->signIn($admin)->put("/admin/selling-pages/{$page->id}", $this->payload($page))->assertSessionHasNoErrors();
+
         // Remove the order block: still blocked, with the reason.
         $blocks = array_values(array_filter($page->draft_blocks, fn ($b) => in_array($b['type'], ['hero', 'faq'], true)));
         $blocks[1]['data']['items'][2]['a'] = 'Within 14 days.';
-        $this->signIn($admin)->put("/admin/selling-pages/{$page->id}", $this->payload($page, ['blocks' => $blocks]))->assertSessionHasNoErrors();
+        $this->signIn($admin)->putJson("/admin/selling-pages/{$page->id}/draft", ['blocks' => $blocks])->assertOk();
         $response = $this->signIn($admin)->post("/admin/selling-pages/{$page->id}/publish");
         $this->assertStringContainsString('Add an Order block', session('error'));
         $response->assertSessionHas('error');
 
         // Two order blocks are also refused.
-        $this->signIn($admin)->put("/admin/selling-pages/{$page->id}", $this->payload($page, ['blocks' => [...$blocks, Blocks::make('order'), Blocks::make('order')]]));
+        $this->signIn($admin)->putJson("/admin/selling-pages/{$page->id}/draft", ['blocks' => [...$blocks, Blocks::make('order'), Blocks::make('order')]])->assertOk();
         $this->signIn($admin)->post("/admin/selling-pages/{$page->id}/publish");
         $this->assertStringContainsString('only one Order block', session('error'));
 
-        $this->signIn($admin)->put("/admin/selling-pages/{$page->id}", $this->payload($page, ['blocks' => [...$blocks, Blocks::make('order')]]));
+        $this->signIn($admin)->putJson("/admin/selling-pages/{$page->id}/draft", ['blocks' => [...$blocks, Blocks::make('order')]])->assertOk();
         $this->signIn($admin)->post("/admin/selling-pages/{$page->id}/publish")->assertSessionHas('success');
 
         $page->refresh();
@@ -84,7 +87,7 @@ class SellingPageAdminTest extends AdminTestCase
         $this->signIn($admin)->post("/admin/selling-pages/{$page->id}/publish")->assertSessionHas('success');
 
         $draft = [Blocks::make('rich_text', ['html' => '<p>New paragraph</p><script>x()</script>']), ...$page->refresh()->draft_blocks];
-        $this->signIn($admin)->put("/admin/selling-pages/{$page->id}", $this->payload($page, ['blocks' => $draft]))->assertSessionHasNoErrors();
+        $this->signIn($admin)->putJson("/admin/selling-pages/{$page->id}/draft", ['blocks' => $draft])->assertOk();
 
         $this->assertSame('<p>New paragraph</p>', $page->refresh()->draft_blocks[0]['data']['html']);
         $this->get('/p/preset-launch')->assertOk()->assertDontSee('New paragraph');

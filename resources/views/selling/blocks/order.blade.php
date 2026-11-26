@@ -1,9 +1,9 @@
 @php use App\Support\Money; @endphp
 @include('selling.blocks._open', ['id' => 'order'])
     <div class="container-selling text-left" data-order-root>
-        <h2 class="section-heading {{ $style['align'] === 'center' ? 'text-center' : '' }}">{{ $d['heading'] ?: 'Complete your order' }}</h2>
+        <h2 class="section-heading {{ $style['align'] === 'center' ? 'text-center' : '' }}" @edit('heading')>{{ $d['heading'] ?: 'Complete your order' }}</h2>
         @if ($d['subline'])
-            <p class="mt-2 sp-muted {{ $style['align'] === 'center' ? 'text-center' : '' }}">{{ $d['subline'] }}</p>
+            <p class="mt-2 sp-muted {{ $style['align'] === 'center' ? 'text-center' : '' }}" @edit('subline')>{{ $d['subline'] }}</p>
         @endif
 
         @if ($testMode)

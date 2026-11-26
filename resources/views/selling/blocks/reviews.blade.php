@@ -3,7 +3,7 @@
     @include('selling.blocks._open')
         <div class="container-selling">
             @if ($d['heading'])
-                <h2 class="section-heading">{{ $d['heading'] }}</h2>
+                <h2 class="section-heading" @edit('heading')>{{ $d['heading'] }}</h2>
             @endif
             <ul class="sp-cards mt-7" style="--sp-cols: {{ min(3, $list->count()) }}">
                 @foreach ($list as $review)

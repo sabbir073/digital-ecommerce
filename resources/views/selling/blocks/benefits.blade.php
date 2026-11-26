@@ -2,11 +2,11 @@
 @if ($items->isNotEmpty())
     @include('selling.blocks._open')
         <div class="container-selling sp-cards" style="--sp-cols: {{ min(4, $items->count()) }}">
-            @foreach ($items as $item)
+            @foreach ($items as $index => $item)
                 <div class="sp-card">
-                    <h3 class="text-[19px]">{{ $item['title'] }}</h3>
+                    <h3 class="text-[19px]" @edit("items.$index.title")>{{ $item['title'] }}</h3>
                     @if ($item['text'])
-                        <p class="mt-2 sp-muted">{{ $item['text'] }}</p>
+                        <p class="mt-2 sp-muted" @edit("items.$index.text")>{{ $item['text'] }}</p>
                     @endif
                 </div>
             @endforeach
