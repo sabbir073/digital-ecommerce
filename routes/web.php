@@ -98,4 +98,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/account', [AccountController::class, 'index'])->name('account');
     Route::post('/logout', [AccountController::class, 'logout'])->name('logout');
+    Route::post('/account/delete-request', [AccountController::class, 'requestDeletion'])->middleware('throttle:sign-in')->name('account.deletion.request');
+    Route::delete('/account/delete-request', [AccountController::class, 'cancelDeletion'])->name('account.deletion.cancel');
 });

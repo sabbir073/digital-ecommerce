@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
+use App\Models\DataDeletionRequest;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Integrations\Tracking;
@@ -33,7 +34,29 @@ class AccountController extends Controller
             ->latest('id')
             ->paginate(10);
 
-        return view('storefront.account.index', ['user' => $user, 'orders' => $orders]);
+        return view('storefront.account.index', [
+            'user' => $user, 'orders' => $orders,
+            'deletionRequest' => DataDeletionRequest::query()->where('user_id', $user->id)->where('status', DataDeletionRequest::PENDING)->first(),
+        ]);
+    }
+
+    /** The customer asks for their personal data to be deleted. A person at the store carries it out. */
+    public function requestDeletion(Request $request): RedirectResponse
+    {
+        $user = $request->user('web');
+        $request->validateWithBag('deletion', ['password' => ['required', 'current_password:web']], ['password.current_password' => t('That password is not right.')]);
+
+        DataDeletionRequest::query()->firstOrCreate(['user_id' => $user->id, 'status' => DataDeletionRequest::PENDING], ['email' => Str::lower($user->email)]);
+
+        return redirect()->to(route('account').'#your-data')->with('status', t('We received your request. Your account and personal data will be deleted, and we will not email you again about it.'));
+    }
+
+    public function cancelDeletion(Request $request): RedirectResponse
+    {
+        DataDeletionRequest::query()->where('user_id', $request->user('web')->id)->where('status', DataDeletionRequest::PENDING)
+            ->update(['status' => DataDeletionRequest::CANCELLED]);
+
+        return redirect()->to(route('account').'#your-data')->with('status', t('Your request was cancelled. Nothing is deleted.'));
     }
 
     public function showLogin(): View

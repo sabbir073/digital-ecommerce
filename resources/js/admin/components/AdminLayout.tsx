@@ -3,6 +3,7 @@ import AdminPanelSettingsOutlined from '@mui/icons-material/AdminPanelSettingsOu
 import CategoryOutlined from '@mui/icons-material/CategoryOutlined';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import GroupOutlined from '@mui/icons-material/GroupOutlined';
+import BackupOutlined from '@mui/icons-material/BackupOutlined';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
@@ -62,6 +63,7 @@ interface NavItem {
     href: string;
     icon: ReactElement;
     module?: string;
+    superOnly?: boolean;
     match: (path: string) => boolean;
 }
 
@@ -125,6 +127,7 @@ const NAV: { heading: string; items: NavItem[] }[] = [
             { label: 'Roles', href: '/admin/roles', icon: <AdminPanelSettingsOutlined />, module: 'staff', match: (p) => p.startsWith('/admin/roles') },
             { label: 'Sign-in security', href: '/admin/staff-security', icon: <LockOutlined />, module: 'staff', match: (p) => p.startsWith('/admin/staff-security') },
             { label: 'Activity log', href: '/admin/activity', icon: <HistoryOutlined />, module: 'activity', match: (p) => p.startsWith('/admin/activity') },
+            { label: 'Backups', href: '/admin/backups', icon: <BackupOutlined />, superOnly: true, match: (p) => p.startsWith('/admin/backups') },
         ],
     },
 ];
@@ -158,7 +161,7 @@ export default function AdminLayout({ title, actions, children }: { title: strin
             <Divider />
             <Box sx={{ px: 1.5, py: 1, overflowY: 'auto', flex: 1 }}>
                 {NAV.map((group) => {
-                    const items = group.items.filter((item) => !item.module || can(item.module));
+                    const items = group.items.filter((item) => (item.superOnly ? !!auth.user?.isSuper : !item.module || can(item.module)));
                     if (items.length === 0) return null;
                     return (
                         <List

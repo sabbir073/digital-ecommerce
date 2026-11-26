@@ -242,6 +242,8 @@
         display: inline-flex;
         align-items: center;
         min-height: 44px;
+        min-width: 44px;
+        justify-content: center;
     }
 
     .breadcrumb a:hover {
@@ -1518,4 +1520,10 @@
         .chat-panel { animation: none; }
         .chat-launcher, .chat-send { transition: none; }
     }
+}
+
+/* The body text is 15px, so Tailwind's "11" (2.75rem) falls short of the 44px every tap target needs. */
+@layer utilities {
+    .min-h-11 { min-height: 44px; }
+    .min-w-11 { min-width: 44px; }
 }

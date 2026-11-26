@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ChatController;
@@ -122,6 +123,13 @@ Route::middleware('admin.auth')->group(function () {
     // Activity log (read only)
     Route::get('activity', [ActivityLogController::class, 'index'])->middleware('permission:activity,view')->name('activity.index');
 
+    // Backups (Super Admins only, checked in the controller)
+    Route::get('backups', [BackupController::class, 'index'])->name('backups.index');
+    Route::post('backups', [BackupController::class, 'store'])->middleware('throttle:6,1')->name('backups.store');
+    Route::put('backups', [BackupController::class, 'update'])->name('backups.update');
+    Route::get('backups/{name}', [BackupController::class, 'download'])->name('backups.download');
+    Route::delete('backups/{name}', [BackupController::class, 'destroy'])->name('backups.destroy');
+
     // Orders
     Route::get('orders', [OrderController::class, 'index'])->middleware('permission:orders,view')->name('orders.index');
     Route::get('orders/export', [OrderController::class, 'export'])->middleware('permission:orders,view')->name('orders.export');
@@ -136,6 +144,7 @@ Route::middleware('admin.auth')->group(function () {
     Route::get('customers', [CustomerController::class, 'index'])->middleware('permission:customers,view')->name('customers.index');
     Route::get('customers/export', [CustomerController::class, 'export'])->middleware('permission:customers,view')->name('customers.export');
     Route::get('customers/view', [CustomerController::class, 'show'])->middleware('permission:customers,view')->name('customers.show');
+    Route::delete('customers/data', [CustomerController::class, 'erase'])->middleware('permission:customers,delete')->name('customers.erase');
 
     // Coupons
     Route::get('reviews', [ReviewController::class, 'index'])->middleware('permission:reviews,view')->name('reviews.index');

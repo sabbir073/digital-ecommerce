@@ -39,7 +39,7 @@
 
     <footer class="container-selling flex flex-wrap justify-between gap-3 py-7 text-[14px] text-muted">
         <span>&copy; {{ date('Y') }} {{ $storeName }}</span>
-        <span>{{ t('Secure card payment by Stripe') }} <button type="button" hidden data-consent-open class="ml-2 underline">{{ t('Cookie settings') }}</button></span>
+        <span>{{ t('Secure card payment by Stripe') }} <button type="button" hidden data-consent-open class="ml-2 inline-flex min-h-11 items-center underline">{{ t('Cookie settings') }}</button></span>
     </footer>
 
     @if (! ($builder ?? false) && ($chat['onSellingPages'] ?? false))

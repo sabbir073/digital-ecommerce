@@ -33,6 +33,6 @@
         @endforeach
     </div>
     <div class="border-t border-line">
-        <div class="container-store py-5 text-label text-muted">&copy; {{ date('Y') }} {{ $storeName }}. {{ t('All rights reserved.') }} <button type="button" hidden data-consent-open class="ml-2 underline">{{ t('Cookie settings') }}</button></div>
+        <div class="container-store py-5 text-label text-muted">&copy; {{ date('Y') }} {{ $storeName }}. {{ t('All rights reserved.') }} <button type="button" hidden data-consent-open class="ml-2 inline-flex min-h-11 items-center underline">{{ t('Cookie settings') }}</button></div>
     </div>
 </footer>

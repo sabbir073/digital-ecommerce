@@ -63,5 +63,33 @@
             </ul>
             {{ $orders->links('storefront.partials.pagination') }}
         @endif
+
+        <section id="your-data" class="mt-12 max-w-2xl scroll-mt-28 border-t border-line pt-8" aria-labelledby="your-data-heading">
+            <h2 id="your-data-heading" class="text-[22px]">{{ t('Your data') }}</h2>
+            @if (session('status'))
+                <p class="mt-3 rounded-card bg-soft px-4 py-3" role="status">{{ session('status') }}</p>
+            @endif
+            @if ($deletionRequest)
+                <p class="mt-3 text-muted">{{ t('You asked us on :date to delete your account and personal data. We are working on it.', ['date' => $deletionRequest->created_at->format('M j, Y')]) }}</p>
+                <form action="{{ route('account.deletion.cancel') }}" method="post" class="mt-4">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-secondary btn-sm">{{ t('Cancel my request') }}</button>
+                </form>
+            @else
+                <p class="mt-3 text-muted">{{ t('You can ask us to delete your account and personal data. Your downloads stop working, and we keep only the order records the law requires, without your name or email.') }}</p>
+                <form action="{{ route('account.deletion.request') }}" method="post" class="mt-4 flex flex-wrap items-end gap-3">
+                    @csrf
+                    <div class="min-w-0 flex-1 basis-60">
+                        <label for="deletion-password" class="field-label">{{ t('Your password, to confirm') }}</label>
+                        <input id="deletion-password" name="password" type="password" required autocomplete="current-password" class="field" @error('password', 'deletion') aria-invalid="true" aria-describedby="deletion-password-error" @enderror>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">{{ t('Ask to delete my data') }}</button>
+                    @error('password', 'deletion')
+                        <p id="deletion-password-error" class="field-error basis-full" role="alert">{{ $message }}</p>
+                    @enderror
+                </form>
+            @endif
+        </section>
     </div>
 @endsection

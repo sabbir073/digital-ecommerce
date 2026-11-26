@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -35,9 +36,10 @@ export interface Customer {
 interface Props {
     customers: Paginated<Customer>;
     filters: { search: string; sort: string };
+    deletionRequests: { email: string; at: string | null }[];
 }
 
-export default function CustomersIndex({ customers, filters }: Props) {
+export default function CustomersIndex({ customers, filters, deletionRequests }: Props) {
     const [search, setSearch] = useState(filters.search);
     const first = useRef(true);
 
@@ -58,6 +60,18 @@ export default function CustomersIndex({ customers, filters }: Props) {
 
     return (
         <AdminLayout title="Customers" actions={<Button component="a" href="/admin/customers/export" variant="outlined" startIcon={<FileDownloadOutlined />}>Export CSV</Button>}>
+            {deletionRequests.length > 0 && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                    <Typography sx={{ fontWeight: 600 }}>{deletionRequests.length === 1 ? 'One customer asked for their data to be deleted' : `${deletionRequests.length} customers asked for their data to be deleted`}</Typography>
+                    <Box component="ul" sx={{ m: 0, mt: 0.5, pl: 2.5 }}>
+                        {deletionRequests.map((request) => (
+                            <li key={request.email}>
+                                <RouterLink href={`/admin/customers/view?email=${encodeURIComponent(request.email)}`}>{request.email}</RouterLink>, asked on {formatDateTime(request.at)}
+                            </li>
+                        ))}
+                    </Box>
+                </Alert>
+            )}
             <Box sx={{ display: 'grid', gap: 2, mb: 2, gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 240px' } }}>
                 <TextField label="Search" placeholder="Email or name" value={search} onChange={(e) => setSearch(e.target.value)} slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchOutlined /></InputAdornment> } }} />
                 <TextField select label="Sort by" value={filters.sort} onChange={(e) => go({ sort: e.target.value })}>

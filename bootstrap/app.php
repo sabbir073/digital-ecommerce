@@ -5,6 +5,8 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HandleRedirects;
 use App\Http\Middleware\MaintenanceMode;
 use App\Http\Middleware\RequirePermission;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TrustProxies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,6 +32,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.auth' => AuthenticateAdmin::class,
             'permission' => RequirePermission::class,
         ]);
+        $middleware->replace(Illuminate\Http\Middleware\TrustProxies::class, TrustProxies::class);
+        $middleware->append(SecurityHeaders::class);
         // Runs before routing, so an old address is redirected even though no route matches it.
         $middleware->append(HandleRedirects::class);
         $middleware->web(append: [MaintenanceMode::class]);
