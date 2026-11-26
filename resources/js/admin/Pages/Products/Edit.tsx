@@ -235,6 +235,7 @@ export default function ProductEdit({ product, categories, maxFileMb }: Props) {
                 <Stack direction="row" spacing={1}>
                     <Button component={RouterLink} href="/admin/products" variant="outlined" startIcon={<ArrowBack />}>Products</Button>
                     {product?.status === 'active' && <Button component="a" href={`/product/${product.slug}`} target="_blank" rel="noopener" variant="outlined">View</Button>}
+                    {product && can('seo') && <Button component={RouterLink} href={`/admin/seo/product/${product.id}`} variant="outlined">SEO</Button>}
                     {editable && <Button variant="contained" loading={form.processing} onClick={submit}>{product ? 'Save' : 'Create product'}</Button>}
                 </Stack>
             }

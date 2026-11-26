@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Services\Chat\ChatSettings;
 use App\Services\Checkout\CartService;
 use App\Services\Content\Navigation;
+use App\Services\Seo\SeoBuilder;
 use App\Services\StoreSettings;
 use App\Services\UiText;
 use Illuminate\Support\Carbon;
@@ -68,6 +69,7 @@ class StorefrontComposer
                 ->filter(fn (array $menu) => $menu['items'] !== [])->values(),
             'cartCount' => $this->cartCount(),
             'theme' => $this->settings->storefrontTheme(),
+            'seoSite' => app(SeoBuilder::class)->site(),
             'currencyFormat' => StoreSettings::currencyFormat(),
             'uiText' => UiText::forScripts(),
             'storeContact' => array_filter([

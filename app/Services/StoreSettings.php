@@ -70,7 +70,10 @@ class StoreSettings
         ];
     }
 
-    /** @return array{name:string, tagline:string, footer_text:string, contact_email:string, contact_phone:string, address:string, currency_format:string, number_prefix:string, number_style:string} */
+    /** What the product page says about delivery until the owner writes their own. */
+    public const DELIVERY_TEXT = 'This is a digital product. Your download link is shown right after payment and sent to your email.';
+
+    /** @return array{name:string, tagline:string, footer_text:string, contact_email:string, contact_phone:string, address:string, delivery_text:string, returns_text:string, currency_format:string, number_prefix:string, number_style:string} */
     public function store(): array
     {
         return [
@@ -80,6 +83,8 @@ class StoreSettings
             'contact_email' => (string) Setting::get('store.contact_email', ''),
             'contact_phone' => (string) Setting::get('store.contact_phone', ''),
             'address' => (string) Setting::get('store.address', ''),
+            'delivery_text' => (string) Setting::get('product.delivery_text', self::DELIVERY_TEXT),
+            'returns_text' => (string) Setting::get('product.returns_text', ''),
             'currency_format' => self::currencyFormat(),
             'number_prefix' => (string) Setting::get('orders.number_prefix', ''),
             'number_style' => isset(self::NUMBER_STYLES[Setting::get('orders.number_style')]) ? Setting::get('orders.number_style') : 'date_code',

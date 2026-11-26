@@ -18,6 +18,7 @@ import { useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import BlockFields, { type FieldDef, type MediaMap } from '../../components/BlockFields';
 import { useCan } from '../../lib/can';
+import RouterLink from '../../components/RouterLink';
 
 interface Section {
     type: string;
@@ -99,6 +100,7 @@ export default function HomeEditor({ sections: saved, media: savedMedia }: { sec
             actions={
                 <Stack direction="row" sx={{ gap: 1.5 }}>
                     <Button component="a" href="/" target="_blank" rel="noopener" variant="outlined" startIcon={<OpenInNew />}>View</Button>
+                    {can('seo') && <Button component={RouterLink} href="/admin/seo/home" variant="outlined">SEO</Button>}
                     {!disabled && <Button variant="contained" onClick={save} loading={saving} disabled={!dirty}>Save</Button>}
                 </Stack>
             }

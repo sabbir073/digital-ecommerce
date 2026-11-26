@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Storefront;
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Models\Product;
-use App\Models\Setting;
 use App\Models\Variant;
 use App\Services\Reviews\ReviewListing;
+use App\Services\Seo\SeoBuilder;
+use App\Services\Seo\StructuredData;
+use App\Services\StoreSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -35,16 +37,36 @@ class ProductController extends Controller
             ->orderByDesc('sales_count')->orderByDesc('id')
             ->limit(4)->get();
 
-        return view('storefront.product', $reviews->build($product->id, $request) + [
+        $listing = $reviews->build($product->id, $request);
+        $store = app(StoreSettings::class)->store();
+
+        return view('storefront.product', $listing + [
             'form' => ReviewController::formContext($request, $product),
             'product' => $product,
+            'seo' => $this->seo($product, $listing['reviews']->items()),
             'gallery' => $gallery,
             'related' => $related,
             'sellingPage' => $product->sellingPages()->published()->latest('published_at')->first(),
             'state' => $this->state($product),
-            'deliveryText' => Setting::get('product.delivery_text', 'This is a digital product. Your download link is shown right after payment and sent to your email.'),
-            'returnsText' => Setting::get('product.returns_text'),
+            'deliveryText' => $store['delivery_text'],
+            'returnsText' => $store['returns_text'],
         ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function seo(Product $product, array $shownReviews): array
+    {
+        $data = app(StructuredData::class);
+        $trail = [['name' => t('Home'), 'url' => route('home')]];
+        if ($product->category?->parent) {
+            $trail[] = ['name' => $product->category->parent->name, 'url' => url('/c/'.$product->category->parent->slug)];
+        }
+        if ($product->category) {
+            $trail[] = ['name' => $product->category->name, 'url' => url('/c/'.$product->category->slug)];
+        }
+        $trail[] = ['name' => $product->name, 'url' => route('product', $product->slug)];
+
+        return app(SeoBuilder::class)->for('product', $product, ['json_ld' => [$data->product($product, $shownReviews), $data->breadcrumbs($trail)]]);
     }
 
     /**

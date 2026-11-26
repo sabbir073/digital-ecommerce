@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSeo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSeo;
 
     public const STATUSES = ['draft', 'active', 'archived'];
 
@@ -59,11 +59,6 @@ class Product extends Model
     public function sellingPages(): HasMany
     {
         return $this->hasMany(SellingPage::class);
-    }
-
-    public function seo(): MorphOne
-    {
-        return $this->morphOne(SeoMeta::class, 'seoable');
     }
 
     /** Products a visitor may see. */

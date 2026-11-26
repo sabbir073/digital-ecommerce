@@ -4,10 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@hasSection('title')@yield('title') · @endif{{ $storeName }}</title>
-    @hasSection('description')
-        <meta name="description" content="@yield('description')">
-    @endif
+    @include('storefront.partials.seo-head')
     @if ($builder ?? false)
         {{-- The page builder's canvas: the same page and theme, with the editing script instead of the shop's. --}}
         @vite(['resources/css/app.css', 'resources/css/builder-canvas.css', 'resources/js/admin/builder-canvas.ts'])
@@ -18,6 +15,11 @@
     @stack('head')
 </head>
 <body class="flex min-h-screen flex-col bg-surface text-ink grid-{{ $theme['density'] }}">
+    @unless ($builder ?? false)
+        @if ($seoSite['body_start'] !== '')
+            {!! $seoSite['body_start'] !!}
+        @endif
+    @endunless
     <a href="#main" class="skip-link">{{ t('Skip to content') }}</a>
 
     @include('storefront.partials.header')
@@ -54,5 +56,10 @@
         <script type="application/json" id="ui-text">{!! json_encode($uiText, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!}</script>
     @endif
     @stack('end')
+    @unless ($builder ?? false)
+        @if ($seoSite['body_end'] !== '')
+            {!! $seoSite['body_end'] !!}
+        @endif
+    @endunless
 </body>
 </html>

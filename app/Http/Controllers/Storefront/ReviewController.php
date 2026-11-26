@@ -10,10 +10,12 @@ use App\Models\Review;
 use App\Models\ReviewReport;
 use App\Models\ReviewRequest;
 use App\Models\ReviewVote;
+use App\Models\Setting;
 use App\Services\Reviews\Captcha;
 use App\Services\Reviews\ReviewListing;
 use App\Services\Reviews\ReviewService;
 use App\Services\Reviews\ReviewSettings;
+use App\Services\Seo\SeoBuilder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +39,13 @@ class ReviewController extends Controller
     /** Reviews of the store as a whole. */
     public function index(Request $request, ReviewListing $listing): View
     {
-        return view('storefront.reviews', $listing->build(null, $request) + ['form' => self::formContext($request, null)]);
+        $store = Setting::get('store.name', config('app.name'));
+        $filtered = collect($request->query())->filter(fn ($value) => $value !== null && $value !== '')->isNotEmpty();
+
+        return view('storefront.reviews', $listing->build(null, $request) + [
+            'form' => self::formContext($request, null),
+            'seo' => app(SeoBuilder::class)->page(t('Store reviews'), t('What customers say about buying from :store.', ['store' => $store]), ['canonical' => route('reviews'), 'noindex' => $filtered]),
+        ]);
     }
 
     public function storeForProduct(Request $request, string $slug): RedirectResponse

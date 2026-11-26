@@ -8,6 +8,8 @@ use App\Models\ContactMessage;
 use App\Models\ContentPage;
 use App\Models\Setting;
 use App\Services\Selling\PagePresenter;
+use App\Services\Seo\SeoBuilder;
+use App\Services\Seo\StructuredData;
 use App\Support\Blocks;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +33,10 @@ class PageController extends Controller
 
         $blocks = Blocks::normalize($preview ? ($page->draft_blocks ?? $page->published_blocks) : $page->published_blocks, 'content');
 
-        return view('storefront.page', $presenter->present(null, $blocks) + ['page' => $page, 'preview' => $preview, 'builder' => false, 'blocksFor' => 'content']);
+        return view('storefront.page', $presenter->present(null, $blocks) + [
+            'page' => $page, 'preview' => $preview, 'builder' => false, 'blocksFor' => 'content',
+            'seo' => app(SeoBuilder::class)->for('page', $page, ['json_ld' => array_values(array_filter([app(StructuredData::class)->faq($blocks)]))]),
+        ]);
     }
 
     public function contact(Request $request): RedirectResponse

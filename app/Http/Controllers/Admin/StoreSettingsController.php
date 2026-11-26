@@ -46,6 +46,8 @@ class StoreSettingsController extends Controller
             'contact_email' => ['nullable', 'email', 'max:190'],
             'contact_phone' => ['nullable', 'string', 'max:40'],
             'address' => ['nullable', 'string', 'max:300'],
+            'delivery_text' => ['nullable', 'string', 'max:1000'],
+            'returns_text' => ['nullable', 'string', 'max:1000'],
             'currency_format' => ['required', Rule::in(array_keys(StoreSettings::CURRENCY_FORMATS))],
             'number_prefix' => ['nullable', 'string', 'max:8', 'regex:/^[A-Z0-9]+-?$/'],
             'number_style' => ['required', Rule::in(array_keys(StoreSettings::NUMBER_STYLES))],
@@ -60,6 +62,8 @@ class StoreSettingsController extends Controller
         Setting::put('store.contact_email', $data['contact_email'] ?? '');
         Setting::put('store.contact_phone', $data['contact_phone'] ?? '');
         Setting::put('store.address', $data['address'] ?? '');
+        Setting::put('product.delivery_text', $data['delivery_text'] ?? '');
+        Setting::put('product.returns_text', $data['returns_text'] ?? '');
         Setting::put('store.currency_format', $data['currency_format']);
         Setting::put('orders.number_prefix', $data['number_prefix'] ?? '');
         Setting::put('orders.number_style', $data['number_style']);

@@ -17,12 +17,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+import TravelExploreOutlined from '@mui/icons-material/TravelExploreOutlined';
 import Typography from '@mui/material/Typography';
 import { type FormEvent, useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import MediaPicker from '../../components/MediaPicker';
 import { useCan } from '../../lib/can';
+import RouterLink from '../../components/RouterLink';
 import { slugify } from '../../lib/format';
 import type { MediaItem } from '../../lib/types';
 
@@ -91,6 +93,7 @@ export default function CategoriesIndex({ categories }: { categories: Category[]
                     /c/{category.slug} · {category.products} {category.products === 1 ? 'product' : 'products'}
                 </Typography>
             </Box>
+            {can('seo') && <Tooltip title="SEO"><IconButton aria-label={`SEO of ${category.name}`} component={RouterLink} href={`/admin/seo/category/${category.id}`}><TravelExploreOutlined fontSize="small" /></IconButton></Tooltip>}
             {can('categories', 'edit') && (
                 <>
                     <Tooltip title="Move up"><span><IconButton aria-label={`Move ${category.name} up`} disabled={index === 0} onClick={() => move(siblings, index, -1)}><ArrowUpward fontSize="small" /></IconButton></span></Tooltip>

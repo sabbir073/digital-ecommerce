@@ -12,6 +12,8 @@ use App\Models\SellingPage;
 use App\Models\Setting;
 use App\Services\Reviews\RatingCalculator;
 use App\Services\Reviews\ReviewSettings;
+use App\Services\Seo\SeoBuilder;
+use App\Services\Seo\StructuredData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 
@@ -40,6 +42,7 @@ class HomeController extends Controller
         return view('storefront.home', [
             'tagline' => Setting::get('store.tagline', 'Digital products, delivered instantly.'),
             'sections' => $sections,
+            'seo' => app(SeoBuilder::class)->for('home', null, ['json_ld' => app(StructuredData::class)->home()]),
         ]);
     }
 

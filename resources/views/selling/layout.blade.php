@@ -4,10 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title') · {{ $storeName }}</title>
-    @hasSection('description')
-        <meta name="description" content="@yield('description')">
-    @endif
+    @include('storefront.partials.seo-head')
     @if ($builder ?? false)
         {{-- The builder canvas: same page and theme, with the editing script instead of the checkout script. --}}
         <meta name="robots" content="noindex, nofollow">
@@ -19,6 +16,11 @@
     @include('storefront.partials.theme-head')
 </head>
 <body class="bg-surface text-ink">
+    @unless ($builder ?? false)
+        @if ($seoSite['body_start'] !== '')
+            {!! $seoSite['body_start'] !!}
+        @endif
+    @endunless
     <a href="#main" class="skip-link">{{ t('Skip to content') }}</a>
 
     {{-- No store navigation here, so nothing pulls the customer away from the page. --}}
@@ -49,5 +51,10 @@
         <script type="application/json" id="ui-text">{!! json_encode($uiText, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!}</script>
     @endif
     @stack('end')
+    @unless ($builder ?? false)
+        @if ($seoSite['body_end'] !== '')
+            {!! $seoSite['body_end'] !!}
+        @endif
+    @endunless
 </body>
 </html>

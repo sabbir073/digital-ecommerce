@@ -15,7 +15,7 @@ import AdminLayout from '../../components/AdminLayout';
 import { useCan } from '../../lib/can';
 
 interface Props {
-    store: { name: string; tagline: string; footer_text: string; contact_email: string; contact_phone: string; address: string; currency_format: string; number_prefix: string; number_style: string };
+    store: { name: string; tagline: string; footer_text: string; contact_email: string; contact_phone: string; address: string; delivery_text: string; returns_text: string; currency_format: string; number_prefix: string; number_style: string };
     checkout: { guest_checkout: boolean; phone: string; order_notes: boolean; terms: boolean; terms_page_id: number | null };
     stock: { low_stock_threshold: number; allow_overselling: boolean };
     maintenance: { enabled: boolean; message: string };
@@ -69,6 +69,10 @@ export default function StoreSettings({ store, checkout, stock, maintenance, opt
                             <TextField label="Contact phone" disabled={locked} value={details.data.contact_phone} onChange={(e) => details.setData('contact_phone', e.target.value)} error={!!details.errors.contact_phone} helperText={details.errors.contact_phone ?? 'Shown in the footer when filled in.'} />
                         </Box>
                         <TextField label="Business address" multiline minRows={2} disabled={locked} value={details.data.address} onChange={(e) => details.setData('address', e.target.value)} error={!!details.errors.address} helperText={details.errors.address ?? 'Shown in the footer and at the bottom of customer emails.'} />
+                        <Box sx={two}>
+                            <TextField label="Delivery text" multiline minRows={3} disabled={locked} value={details.data.delivery_text} onChange={(e) => details.setData('delivery_text', e.target.value)} error={!!details.errors.delivery_text} helperText={details.errors.delivery_text ?? 'Shown under "Delivery" on every product page. Leave empty to hide it.'} slotProps={{ htmlInput: { maxLength: 1000 } }} />
+                            <TextField label="Returns and refunds text" multiline minRows={3} disabled={locked} value={details.data.returns_text} onChange={(e) => details.setData('returns_text', e.target.value)} error={!!details.errors.returns_text} helperText={details.errors.returns_text ?? 'Shown under "Returns" on every product page. Leave empty to hide it.'} slotProps={{ htmlInput: { maxLength: 1000 } }} />
+                        </Box>
                         <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' } }}>
                             <TextField select label="How prices are written" disabled={locked} value={details.data.currency_format} onChange={(e) => details.setData('currency_format', e.target.value)} helperText="The store sells in US dollars.">
                                 {Object.entries(options.currencyFormats).map(([value, label]) => <MenuItem key={value} value={value}>{label}</MenuItem>)}

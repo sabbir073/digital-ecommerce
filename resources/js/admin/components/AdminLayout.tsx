@@ -24,6 +24,9 @@ import PaletteOutlined from '@mui/icons-material/PaletteOutlined';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import StorefrontOutlined from '@mui/icons-material/StorefrontOutlined';
 import TranslateOutlined from '@mui/icons-material/TranslateOutlined';
+import TravelExploreOutlined from '@mui/icons-material/TravelExploreOutlined';
+import TuneOutlined from '@mui/icons-material/TuneOutlined';
+import AltRouteOutlined from '@mui/icons-material/AltRouteOutlined';
 import PhotoLibraryOutlined from '@mui/icons-material/PhotoLibraryOutlined';
 import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import Alert from '@mui/material/Alert';
@@ -93,6 +96,14 @@ const NAV: { heading: string; items: NavItem[] }[] = [
             { label: 'Blog', href: '/admin/blog', icon: <EditNoteOutlined />, module: 'blog', match: (p) => p.startsWith('/admin/blog') },
             { label: 'Header and footer', href: '/admin/navigation', icon: <MenuOpenOutlined />, module: 'content', match: (p) => p.startsWith('/admin/navigation') },
             { label: 'Messages', href: '/admin/messages', icon: <MailOutlined />, module: 'chat', match: (p) => p.startsWith('/admin/messages') },
+        ],
+    },
+    {
+        heading: 'SEO',
+        items: [
+            { label: 'SEO dashboard', href: '/admin/seo', icon: <TravelExploreOutlined />, module: 'seo', match: (p) => p.startsWith('/admin/seo') && !p.startsWith('/admin/seo/settings') && !p.startsWith('/admin/seo/redirects') },
+            { label: 'SEO settings', href: '/admin/seo/settings', icon: <TuneOutlined />, module: 'seo', match: (p) => p.startsWith('/admin/seo/settings') },
+            { label: 'Redirects and 404s', href: '/admin/seo/redirects', icon: <AltRouteOutlined />, module: 'seo', match: (p) => p.startsWith('/admin/seo/redirects') },
         ],
     },
     {

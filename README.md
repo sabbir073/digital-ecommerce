@@ -3,9 +3,9 @@
 A CMS-driven store for digital products, with a normal catalog checkout and one-page selling pages.
 Built with Laravel 13, React, Tailwind CSS, Material UI (admin) and MySQL.
 
-The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains Phases 1 to 8.
+The product requirements and the approved build plan live in the project documents. The build runs in 11 phases; this repository currently contains Phases 1 to 9.
 
-## What works today (Phases 1 to 8)
+## What works today (Phases 1 to 9)
 
 - Design tokens from PRD section 8, shared by the storefront (Tailwind) and the admin panel (Material UI theme).
 - Shared storefront header and footer, with the announcement bar and category navigation read from the database.
@@ -41,6 +41,9 @@ The product requirements and the approved build plan live in the project documen
 - Admin > Settings > Theme: logo, favicon, accent colour from a tested set or a custom colour that must pass a 4.5 to 1 contrast check, heading and body font from a self-hosted list, product grid density, what shows on product cards and social links.
 - Admin > Settings > Emails: the subject and text of every customer email (order confirmation, refund, review request, chat reply, password reset) with a live preview. Values are escaped and the text is never run as code.
 - Admin > Settings > Interface text: every button label, message and empty state of the storefront can be reworded. Text in views, controllers and scripts goes through `t('...')`; after adding or changing one, run `php artisan ui:scan` to rebuild `resources/ui-strings.php` (a test fails when the list is out of date).
+- SEO on the storefront: every page has a title, description, canonical address, Open Graph and X card tags, built from the page's own SEO fields or the site-wide templates. Cart, checkout and account pages are kept out of search results. Filtered and sorted lists are noindex with a canonical to the clean address, and page 2 and later keep their own canonical. Structured data is generated for products (with ratings once there is an approved review), breadcrumbs, the home page, FAQ blocks and blog posts.
+- `/sitemap.xml` (split by products, categories, selling pages, pages and posts; published and indexable items only) and `/robots.txt` are built on request, so they are always current.
+- Admin > SEO: a dashboard of every item with a failing check; an SEO panel for the home page and each product, category, selling page, page and post (meta title and description with counters and a search preview, address with an automatic 301 when a published address changes, canonical, index and follow, social sharing with a preview, focus keyword, checklist, custom meta tags); SEO settings (templates with variables, default share image, verification tags, custom code for head and body for Super Admins, robots.txt editor with reset, sitemap content types); and Redirects and 404s (create, edit, delete, CSV import, loop detection, and a log of missing addresses with one-click redirect).
 
 ## Local setup
 
