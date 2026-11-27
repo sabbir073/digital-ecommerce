@@ -194,7 +194,8 @@ class SeoTest extends TestCase
     {
         $redirects = app(Redirects::class);
         $redirects->save(null, '/a', '/b', 301);
-        $redirects->save(null, 'https://localhost/B/', '/c', 302);
+        // A full address on this site, in capitals and with a trailing slash, is stored as the plain path.
+        $redirects->save(null, strtoupper(url('/b')).'/', '/c', 302);
 
         $this->get('/a')->assertStatus(301)->assertRedirect('/b');
         $this->get('/b')->assertStatus(302)->assertRedirect('/c');

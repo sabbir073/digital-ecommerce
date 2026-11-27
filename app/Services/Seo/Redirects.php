@@ -16,7 +16,8 @@ class Redirects
     {
         $path = trim($path);
         $host = parse_url(url('/'), PHP_URL_HOST);
-        if (preg_match('~^https?://~i', $path) && parse_url($path, PHP_URL_HOST) === $host) {
+        // Host names are not case sensitive: SHOP.example.com is this site too.
+        if (preg_match('~^https?://~i', $path) && strcasecmp((string) parse_url($path, PHP_URL_HOST), (string) $host) === 0) {
             $path = (string) parse_url($path, PHP_URL_PATH);
         }
         $path = (string) strtok($path, '?#');
